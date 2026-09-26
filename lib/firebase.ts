@@ -8,11 +8,13 @@ const firebaseConfig = {
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Reuse the existing app in dev (Next.js hot reload) instead of re-initializing.
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+// Check if Firebase is already initialized to prevent build-time crashes
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+
+initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
 export const auth = getAuth(app);
