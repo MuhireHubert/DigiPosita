@@ -1,0 +1,163 @@
+mutation CreateUser($displayName: String!, $email: String!) @auth(level: USER) {
+  user_insert(data: {
+    uid_expr: "auth.uid",
+    displayName: $displayName,
+    email: $email
+  })
+}
+
+mutation UpdateUser($displayName: String!) @auth(level: USER) {
+  user_update(key: { id_expr: "auth.uid" }, data: { displayName: $displayName })
+}
+
+mutation DeleteUser @auth(level: USER) {
+  user_delete(key: { id_expr: "auth.uid" })
+}
+
+query GetCurrentUser @auth(level: USER) {
+  user(key: { id_expr: "auth.uid" }) {
+    displayName
+    email
+  }
+}
+
+query ListAllUsers @auth(level: PUBLIC, insecureReason: "Public directory of users") {
+  users {
+    displayName
+  }
+}
+
+mutation CreateMailbox($address: String!) @auth(level: USER) {
+  mailbox_insert(data: {
+    mailboxAddress: $address,
+    ownerId_expr: "auth.uid"
+  })
+}
+
+mutation UpdateMailbox($id: UUID!, $address: String!) @auth(level: USER) {
+  mailbox_update(key: { id: $id }, data: { mailboxAddress: $address })
+}
+
+mutation DeleteMailbox($id: UUID!) @auth(level: USER) {
+  mailbox_delete(key: { id: $id })
+}
+
+query GetMailbox($id: UUID!) @auth(level: USER) {
+  mailbox(id: $id) {
+    mailboxAddress
+  }
+}
+
+query ListMyMailboxes @auth(level: USER) {
+  mailboxes(where: { ownerId: { eq_expr: "auth.uid" } }) {
+    mailboxAddress
+  }
+}
+
+mutation SendLetter($mailboxId: UUID!, $subject: String!, $body: String!) @auth(level: USER) {
+  letter_insert(data: {
+    recipientMailboxId: $mailboxId,
+    senderId_expr: "auth.uid",
+    subject: $subject,
+    body: $body,
+    status: "SENT",
+    sentAt_expr: "request.time"
+  })
+}
+
+mutation UpdateLetterStatus($id: UUID!, $status: String!) @auth(level: USER) {
+  letter_update(key: { id: $id }, data: { status: $status })
+}
+
+mutation DeleteLetter($id: UUID!) @auth(level: USER) {
+  letter_delete(key: { id: $id })
+}
+
+query GetLetter($id: UUID!) @auth(level: USER) {
+  letter(id: $id) {
+    subject
+    body
+  }
+}
+
+query ListSentLetters @auth(level: USER) {
+  letters(where: { senderId: { eq_expr: "auth.uid" } }) {
+    subject
+    sentAt
+  }
+}
+
+mutation CreateAttachment($letterId: UUID!, $url: String!, $name: String!) @auth(level: USER) {
+  attachment_insert(data: {
+    letterId: $letterId,
+    fileUrl: $url,
+    fileName: $name
+  })
+}
+
+mutation UpdateAttachment($id: UUID!, $name: String!) @auth(level: USER) {
+  attachment_update(key: { id: $id }, data: { fileName: $name })
+}
+
+mutation DeleteAttachment($id: UUID!) @auth(level: USER) {
+  attachment_delete(key: { id: $id })
+}
+
+query GetAttachment($id: UUID!) @auth(level: USER) {
+  attachment(id: $id) {
+    fileName
+    fileUrl
+  }
+}
+
+query ListAttachmentsForLetter($letterId: UUID!) @auth(level: USER) {
+  attachments(where: { letterId: { eq: $letterId } }) {
+    fileName
+  }
+}
+
+mutation CreateFolder($name: String!) @auth(level: USER) {
+  folder_insert(data: {
+    name: $name,
+    userId_expr: "auth.uid"
+  })
+}
+
+mutation UpdateFolder($id: UUID!, $name: String!) @auth(level: USER) {
+  folder_update(key: { id: $id }, data: { name: $name })
+}
+
+mutation DeleteFolder($id: UUID!) @auth(level: USER) {
+  folder_delete(key: { id: $id })
+}
+
+query GetFolder($id: UUID!) @auth(level: USER) {
+  folder(id: $id) {
+    name
+  }
+}
+
+query ListMyFolders @auth(level: USER) {
+  folders(where: { userId: { eq_expr: "auth.uid" } }) {
+    name
+  }
+}
+
+mutation AssignLetterToFolder($letterId: UUID!, $folderId: UUID!) @auth(level: USER) {
+  letterAssignment_insert(data: {
+    letterId: $letterId,
+    folderId: $folderId
+  })
+}
+
+mutation RemoveLetterFromFolder($letterId: UUID!, $folderId: UUID!) @auth(level: USER) {
+  letterAssignment_delete(key: { letterId: $letterId, folderId: $folderId })
+}
+
+query ListFolderContents($folderId: UUID!) @auth(level: USER) {
+  letterAssignments(where: { folderId: { eq: $folderId } }) {
+    letter {
+      subject
+    }
+  }
+}

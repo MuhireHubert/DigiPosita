@@ -1,0 +1,38 @@
+type User @table {
+  uid: String!
+  email: String!
+  displayName: String!
+  profilePhotoUrl: String
+  verificationLevel: Int
+}
+
+type Mailbox @table {
+  mailboxAddress: String!
+  owner: User!
+}
+
+type Letter @table {
+  sender: User!
+  recipientMailbox: Mailbox!
+  subject: String!
+  body: String!
+  status: String!
+  sentAt: Timestamp!
+  attachmentUrls: [String]
+}
+
+type Attachment @table {
+  letter: Letter!
+  fileUrl: String!
+  fileName: String!
+}
+
+type Folder @table {
+  name: String!
+  user: User!
+}
+
+type LetterAssignment @table(key: ["letter", "folder"]) {
+  letter: Letter!
+  folder: Folder!
+}

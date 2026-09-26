@@ -1,0 +1,32 @@
+mutation SeedData @transaction {
+  user_insertMany(data: [
+    {uid: "user1", email: "alice@example.com", displayName: "Alice"},
+    {uid: "user2", email: "bob@example.com", displayName: "Bob"},
+    {uid: "user3", email: "charlie@example.com", displayName: "Charlie"}
+  ])
+  mailbox_insertMany(data: [
+    {mailboxAddress: "alice@inbox.com", owner: {id_expr: "uuidV4()"}},
+    {mailboxAddress: "bob@inbox.com", owner: {id_expr: "uuidV4()"}},
+    {mailboxAddress: "charlie@inbox.com", owner: {id_expr: "uuidV4()"}}
+  ])
+  folder_insertMany(data: [
+    {name: "Inbox", user: {id_expr: "uuidV4()"}},
+    {name: "Sent", user: {id_expr: "uuidV4()"}},
+    {name: "Archive", user: {id_expr: "uuidV4()"}}
+  ])
+  letter_insertMany(data: [
+    {sender: {id_expr: "uuidV4()"}, recipientMailbox: {id_expr: "uuidV4()"}, subject: "Hello", body: "Hi Alice", status: "sent", sentAt: "2023-10-01T10:00:00Z"},
+    {sender: {id_expr: "uuidV4()"}, recipientMailbox: {id_expr: "uuidV4()"}, subject: "Meeting", body: "Team sync", status: "draft", sentAt: "2023-10-02T11:00:00Z"},
+    {sender: {id_expr: "uuidV4()"}, recipientMailbox: {id_expr: "uuidV4()"}, subject: "Project Update", body: "Status report", status: "sent", sentAt: "2023-10-03T12:00:00Z"}
+  ])
+  attachment_insertMany(data: [
+    {letter: {id_expr: "uuidV4()"}, fileName: "report.pdf", fileUrl: "http://storage.com/1.pdf"},
+    {letter: {id_expr: "uuidV4()"}, fileName: "image.png", fileUrl: "http://storage.com/2.png"},
+    {letter: {id_expr: "uuidV4()"}, fileName: "notes.txt", fileUrl: "http://storage.com/3.txt"}
+  ])
+  letterAssignment_insertMany(data: [
+    {letter: {id_expr: "uuidV4()"}, folder: {id_expr: "uuidV4()"}},
+    {letter: {id_expr: "uuidV4()"}, folder: {id_expr: "uuidV4()"}},
+    {letter: {id_expr: "uuidV4()"}, folder: {id_expr: "uuidV4()"}}
+  ])
+}
