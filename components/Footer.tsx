@@ -7,7 +7,7 @@ export default function Footer() {
           built to run independently of Iposita's internal systems.
         </p>
         <p className="mt-6 border-t border-white/15 pt-4 text-xs text-[#8C97AC]">
-          Prepared by Muhire, Hub-In Rwanda — Kigali.
+        Copyright Hub-In Rwanda — Kigali.
         </p>
       </div>
     </footer>
