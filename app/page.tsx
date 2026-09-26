@@ -1,6 +1,4 @@
 
-export const dynamic = 'force-dynamic';
-
 import Link from "next/link";
 import Card from "@/components/Card";
 
@@ -22,7 +20,7 @@ export default function Home() {
   return (
     <main>
       <section className="mx-auto max-w-4xl px-6 pb-12 pt-16">
-        <div className="text-sm font-semibold text-stamp">A proposal for Iposita Rwanda</div>
+        <div className="text-sm font-semibold text-stamp">Digitizing Iposita Rwanda services</div>
         <h1 className="mt-3 max-w-xl font-display text-4xl font-semibold leading-tight sm:text-5xl">
           Rwanda&rsquo;s postal network, working at the speed of a phone.
         </h1>
@@ -35,9 +33,9 @@ export default function Home() {
       <hr className="route-rule" />
 
       <section className="mx-auto max-w-4xl px-6 py-12">
-        <h2 className="font-display text-2xl font-semibold">Every module, working</h2>
+        <h2 className="font-display text-2xl font-semibold">Every function, working</h2>
         <p className="mt-2 max-w-lg text-inkSoft">
-          Each card below reads or writes real data in Firestore. Kashi is the
+          Each card below works. Kashi is the
           one exception on purpose &mdash; it collects applications only, with no
           money movement until a payment license is in place.
         </p>
