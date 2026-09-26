@@ -26,7 +26,7 @@ export default function Home() {
         </h1>
         <p className="mt-4 max-w-xl text-inkSoft">
           Iposita already has what no courier startup can build overnight: a post
-          office in nearly every district. This platform puts that reach online.
+          office in 19 locations. This platform puts that reach online.
         </p>
       </section>
 
