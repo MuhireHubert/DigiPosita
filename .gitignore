@@ -1,4 +1,10 @@
-node_modules
-.next
-.env.local
-*.log
+node_modules/
+.next/
+.env*
+!.env.local.example
+.DS_Store
+*.tsbuildinfo
+.firebase/
+*-debug.log
+test-results/
+playwright-report/

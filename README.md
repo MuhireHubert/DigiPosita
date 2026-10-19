@@ -1,128 +1,94 @@
-# Iposita Digital
+# DigiPosita
 
-A Next.js + TypeScript + Firebase build of every module from the original
-brief: pickups, tracking, fees, local deliveries, e-P.O. boxes, tenders/
-submissions, exports & China shipping, auctions, AfCFTA trade inquiries, a
-local shop directory, and an Iposita Kashi application intake. Every page
-other than the calculator reads or writes real data in Firestore — this is
-not a mockup.
+A focused delivery service pilot built with Next.js, TypeScript, Firebase Authentication and Firestore.
 
-## Tech stack
+## Available in this version
 
-- **Next.js 14** (App Router) + **TypeScript**
-- **Tailwind CSS** for styling
-- **Firebase**: Firestore (data), ready for Auth when accounts are needed
-- **firebase-admin** (dev-only) for the seed script
+- Email/password registration, sign-in, password reset and sign-out.
+- Authenticated pickup and local delivery requests, with contact information and package details.
+- A private customer workspace with live status updates, reference numbers, tracking links and cancellation before processing.
+- A staff workspace protected by a Firebase custom claim. Staff can confirm and advance requests; updates publish a tracking history in the same Firestore transaction.
+- Public tracking by an unguessable reference. Tracking documents exclude customer names, phone numbers and street addresses. Public collection listing is forbidden by Firestore rules.
+- Validation and ownership enforced in Firestore rules, independently of the UI.
+- Responsive navigation, loading, empty, failure and setup states.
 
-## 1. Create the Firebase project
+P.O. boxes, document submission, exports, auctions, trade, shops and Kashi display an unavailable-service page. Their Firestore collections are closed. No payments are collected. Pricing is confirmed by staff; the previous unverified tariff calculator has been removed.
 
-1. Go to [console.firebase.google.com](https://console.firebase.google.com) → **Add project**.
-2. Once created, click the **web** icon (`</>`) to register a web app. Copy the
-   config values it shows you.
-3. In the left sidebar, open **Firestore Database** → **Create database** →
-   start in **production mode** (the rules file below handles access).
+## Run locally
 
-## 2. Configure environment variables
+Use Node.js 22 or newer.
 
-```bash
+```sh
+npm ci
 cp .env.local.example .env.local
-```
-
-Paste the values from step 1 into `NEXT_PUBLIC_FIREBASE_*`. Leave
-`FIREBASE_SERVICE_ACCOUNT_JSON` empty unless you plan to run the seed script
-(see step 5).
-
-## 3. Install and run
-
-```bash
-npm install
 npm run dev
 ```
 
-Visit `http://localhost:3000`.
+Without Firebase configuration, public pages render and account services show a setup message. To enable bookings:
 
-## 4. Deploy the Firestore security rules
+1. Create or select your Firebase project and register a web app.
+2. Copy its web configuration to the `NEXT_PUBLIC_FIREBASE_*` variables in `.env.local`.
+3. Enable **Authentication → Email/Password** and add your application domain to Authorized domains. Configure the reset-password email template and password policy.
+4. Create the Firestore database, then deploy **both** rules and indexes:
 
-Install the Firebase CLI once (`npm install -g firebase-tools`), then:
-
-```bash
-firebase login
-firebase init firestore   # point it at firestore.rules, keep default indexes
-firebase deploy --only firestore:rules
+```sh
+npx firebase login
+npx firebase deploy --project YOUR_PROJECT_ID --only firestore:rules,firestore:indexes
 ```
 
-The rules in `firestore.rules` let anyone submit a pickup or delivery
-request (public-facing forms) and read shipment tracking data, but block all
-other writes — those go through the Admin SDK (staff tooling) or the Firebase
-Console for now. Tighten `allow create` to `request.auth != null` once
-customer accounts exist.
+Always specify the intended project explicitly; `.firebaserc` is inherited from the source repository. Wait for indexes to finish building before testing account lists.
 
-## 5. (Optional) Seed a sample shipment for tracking
+## Staff setup
 
-The `/tracking` page queries real Firestore data, so it starts empty. To add
-one sample record to search for:
+Create a normal account through the application. Find its UID in Firebase Authentication. Use Application Default Credentials with administrative rights to that Firebase project:
 
-1. In Firebase Console → Project settings → **Service accounts** → **Generate
-   new private key**. Paste the downloaded JSON as a single line into
-   `FIREBASE_SERVICE_ACCOUNT_JSON` in `.env.local`.
-2. `npm run seed`
-
-## 6. Deploy
-
-Any Node hosting works. Two good fits given the Firebase backend:
-
-- **Vercel** (simplest for Next.js): `vercel` from the project root, add the
-  same env vars in the Vercel dashboard.
-- **Firebase App Hosting**: `firebase init apphosting` — keeps everything in
-  one Firebase project alongside the database.
-
-GitHub Pages (your usual target) doesn't work here — it only serves static
-files, and this app needs a Node server to run. Vercel's free tier is the
-closest equivalent for a Next.js app.
-
-## What's real vs. what still needs approval before launch
-
-Every module below is functionally complete — forms validate, write to
-Firestore, and (where relevant) list live data back. What's *not* included is
-the institutional and regulatory sign-off each one needs before it can go
-live publicly:
-
-| Module | Built as | Needs before launch |
-|---|---|---|
-| Pickup scheduling | Writes to `pickups` | — |
-| Tracking | Reads from `shipments` | Staff process to write tracking updates (Admin SDK / internal tool) |
-| Fee calculator | Client-side only | Confirm pricing formula against Iposita's actual tariff |
-| Local deliveries | Live read + write to `deliveries` | — |
-| e-P.O. box registration | Writes to `poboxes`, status `pending` | Iposita sign-off to assign real box numbers |
-| Tenders / job applications / receipts | Writes to `submissions` | File upload needs Firebase Storage wired in (not yet included); currently captures the record by description only |
-| Small exports & China shipping | Writes to `exports` | Freight-forwarding partner / customs process on the backend |
-| Online auctions | Live read + write to `auctions` | No bidding yet — add a `bids` subcollection when ready; payment on sale needs a processor |
-| AfCFTA trade lane | Writes to `trade_inquiries` | Human trade-facilitation desk to act on inquiries |
-| Local shop directory | Live read + write to `shops` | Light moderation before shops go public |
-| Iposita Kashi | Writes to `kashi_applications` — **KYC intake only, no money movement** | A licensed payment/e-money provider integration, and confirmation this collection meets Rwanda's data protection requirements (encryption at rest, access-controlled, ID data minimized to what's shown here) before accepting real applications |
-
-## A note on Kashi and ID data
-
-The Kashi form only stores the last 4 digits of an ID/passport — full
-verification is assumed to happen in person, deliberately, so this prototype
-never holds a complete government ID number. Before this goes live even in
-intake-only form, confirm with legal/compliance what KYC data Iposita is
-actually permitted to collect and store this way, and whether Firestore's
-default encryption-at-rest is sufficient or a stricter setup is required.
-
-## Project structure
-
+```sh
+export GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/service-account.json
+npm run staff -- FIREBASE_UID
+# Remove access:
+npm run staff -- FIREBASE_UID --revoke
 ```
-app/
-  page.tsx            → dashboard / home
-  pickups/page.tsx     → pickup request form
-  tracking/page.tsx    → tracking lookup
-  calculator/page.tsx  → fee calculator
-  deliveries/page.tsx  → local delivery requests + live list
-components/            → Nav, Footer, Card
-lib/
-  firebase.ts          → Firebase client init
-  types.ts             → shared TypeScript types
-scripts/seed.ts         → adds one sample shipment via Admin SDK
-firestore.rules         → security rules for the collections above
+
+The script preserves other custom claims and revokes refresh tokens. Sign out and sign in to obtain updated permissions. Existing ID tokens may remain valid until expiry (typically up to one hour); for urgent removal use the Firebase administrative incident procedure. Never place service-account keys in `NEXT_PUBLIC_*` variables or commit them.
+
+Staff access is enforced by Firestore rules; hiding a navigation link is not the authorization boundary.
+
+## Request lifecycle
+
+- Pickup: requested → scheduled → collected → delivered.
+- Local delivery: requested → en route → delivered.
+- Customers can change requested → cancelled, without changing other fields.
+- Staff advancement reads the current request inside a transaction and rejects stale updates. Tracking and request updates commit together.
+- The customer workspace shows the latest 50 bookings per service; operations shows the latest 100. Pagination, assignment and advanced search are future work.
+
+## Tests and local emulators
+
+```sh
+npm run typecheck
+npm run build
+npm run test:rules
 ```
+
+Rules tests use a `demo-` project and do not connect to production. Java 21+ is required by the Firestore emulator. They cover authentication, customer isolation, invalid payloads, cancellation, staff transitions, tracking privacy and closed future-service collections.
+
+For local end-to-end development, set the following in `.env.local`:
+
+```dotenv
+NEXT_PUBLIC_FIREBASE_API_KEY=demo-api-key
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=demo-digiposita
+NEXT_PUBLIC_FIREBASE_APP_ID=demo-app
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=localhost
+NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true
+```
+
+Then run `npm run emulators` and `npm run dev` in separate terminals. For the browser suite, run the dev server with `npm run dev -- --port 3123`, install Chromium with `npx playwright install chromium`, and run `npm run test:browser`. `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` can select an existing Chromium executable if needed. Set emulator mode to **false** and replace the configuration before building a live deployment. Emulator data is ephemeral unless explicitly exported.
+
+## Deployment and pilot launch
+
+Deploy to a Node hosting service supporting Next.js 15. Set the Firebase public configuration at **build time**, build with `npm run build`, and run `npm start`. Deploy Firestore rules/indexes to the same Firebase project first. Configure an authorized domain, create a staff account and complete a pickup and a delivery with a separate customer account before inviting users.
+
+This repository does not provision or change cloud resources automatically. Existing source-repository records have no `ownerId` and will not appear in customer accounts. Review and migrate legacy records administratively; never guess ownership or expose them publicly. Legacy shipment records remain closed. New tracking uses a separate `public_shipments` collection with a restricted field list, so old private shipment fields are not exposed by the new rules.
+
+Before accepting real customers, confirm the operating partner, service areas, actual pricing, staff coverage, customer support contact and official branding permission. Add the operator's privacy notice and retention policy, email verification/abuse controls (including Firebase App Check where appropriate), monitoring, backups and recovery procedures. These operational details are not supplied by the repository. The interface identifies itself as a pilot and does not claim a verified institutional affiliation.
+
+The pilot does not include payment processing, dispatch assignment, delivery windows, proof of delivery, notifications or a billing ledger.

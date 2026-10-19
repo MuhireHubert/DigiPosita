@@ -1,12 +1,14 @@
 "use client";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import { useState } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { useAuth } from "@/components/AuthProvider";
 import { db } from "@/lib/firebase";
 
 export default function PickupsPage() {
+  const { user } = useAuth();
   const [form, setForm] = useState({
     contactName: "",
     phone: "",
@@ -15,14 +17,18 @@ export default function PickupsPage() {
     size: "medium",
     notes: "",
   });
-  const [status, setStatus] = useState<"idle" | "saving" | "done" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "saving" | "done" | "error">(
+    "idle",
+  );
   const [pickupId, setPickupId] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!user) return;
     setStatus("saving");
     try {
       const docRef = await addDoc(collection(db, "pickups"), {
+        ownerId: user.uid,
         contactName: form.contactName,
         phone: form.phone,
         address: form.address,
@@ -43,12 +49,18 @@ export default function PickupsPage() {
   if (status === "done") {
     return (
       <main className="mx-auto max-w-lg px-6 py-16">
-        <h1 className="font-display text-2xl font-semibold">Pickup requested</h1>
+        <h1 className="font-display text-2xl font-semibold">
+          Pickup requested
+        </h1>
         <p className="mt-3 text-inkSoft">
           Reference: <span className="font-mono text-ink">{pickupId}</span>
         </p>
+        <a href="/account" className="button mt-5">
+          View my requests
+        </a>
         <p className="mt-2 text-sm text-inkSoft">
-          A courier will confirm a collection window by phone.
+          Your request is awaiting staff confirmation. Follow its status in My
+          requests.
         </p>
       </main>
     );
@@ -59,40 +71,69 @@ export default function PickupsPage() {
       <h1 className="font-display text-2xl font-semibold">Schedule a pickup</h1>
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">
         <Field label="Contact name">
-          <input required className="input" value={form.contactName}
-            onChange={(e) => setForm({ ...form, contactName: e.target.value })} />
+          <input
+            required
+            className="input"
+            value={form.contactName}
+            onChange={(e) => setForm({ ...form, contactName: e.target.value })}
+          />
         </Field>
         <Field label="Phone">
-          <input required className="input" value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+          <input
+            required
+            className="input"
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          />
         </Field>
         <Field label="Pickup address">
-          <input required className="input" value={form.address}
-            onChange={(e) => setForm({ ...form, address: e.target.value })} />
+          <input
+            required
+            className="input"
+            value={form.address}
+            onChange={(e) => setForm({ ...form, address: e.target.value })}
+          />
         </Field>
         <Field label="Weight (kg)">
-          <input required type="number" step="0.1" min="0.1" className="input" value={form.weightKg}
-            onChange={(e) => setForm({ ...form, weightKg: e.target.value })} />
+          <input
+            required
+            type="number"
+            step="0.1"
+            min="0.1"
+            max="1000"
+            className="input"
+            value={form.weightKg}
+            onChange={(e) => setForm({ ...form, weightKg: e.target.value })}
+          />
         </Field>
         <Field label="Size">
-          <select className="input" value={form.size}
-            onChange={(e) => setForm({ ...form, size: e.target.value })}>
+          <select
+            className="input"
+            value={form.size}
+            onChange={(e) => setForm({ ...form, size: e.target.value })}
+          >
             <option value="small">Small (envelope / documents)</option>
             <option value="medium">Medium (parcel)</option>
             <option value="large">Large (box)</option>
           </select>
         </Field>
         <Field label="Notes (optional)">
-          <input className="input" value={form.notes}
-            onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+          <input
+            className="input"
+            value={form.notes}
+            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+          />
         </Field>
-        <button type="submit" disabled={status === "saving"}
-          className="mt-2 rounded bg-ink px-5 py-2.5 text-white hover:bg-green disabled:opacity-60">
+        <button
+          type="submit"
+          disabled={status === "saving"}
+          className="mt-2 rounded bg-ink px-5 py-2.5 text-white hover:bg-green disabled:opacity-60"
+        >
           {status === "saving" ? "Saving…" : "Request pickup"}
         </button>
         {status === "error" && (
           <p className="text-sm text-stamp">
-            Couldn&rsquo;t save the request &mdash; check your Firebase config and try again.
+            Couldn&rsquo;t save the request &mdash; please try again.
           </p>
         )}
       </form>
@@ -100,7 +141,13 @@ export default function PickupsPage() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <label className="block text-sm text-inkSoft">
       {label}

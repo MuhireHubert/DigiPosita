@@ -2,11 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+}
 
 body {
-  background-color: theme('colors.paper');
-  color: theme('colors.ink');
+  background-color: theme("colors.paper");
+  color: theme("colors.ink");
 }
 
 .route-rule {
@@ -15,9 +17,16 @@ body {
 }
 
 .stamp-card {
-  background: #FBFBF9;
+  background: #fbfbf9;
   border: 1px solid rgba(20, 35, 61, 0.16);
-  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+  clip-path: polygon(
+    0 0,
+    calc(100% - 18px) 0,
+    100% 18px,
+    100% 100%,
+    18px 100%,
+    0 calc(100% - 18px)
+  );
 }
 
 .input {
@@ -25,11 +34,28 @@ body {
   padding: 0.6rem 0.75rem;
   border: 1px solid rgba(20, 35, 61, 0.2);
   border-radius: 2px;
-  background: #FBFBF9;
+  background: #fbfbf9;
   font-family: inherit;
-  color: theme('colors.ink');
+  color: theme("colors.ink");
 }
 .input:focus {
-  outline: 2px solid theme('colors.goldDeep');
+  outline: 2px solid theme("colors.goldDeep");
   outline-offset: 1px;
+}
+
+@layer components {
+  .button {
+    @apply inline-flex items-center justify-center rounded-lg bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:bg-green disabled:cursor-wait disabled:opacity-60;
+  }
+  .button.secondary {
+    @apply border border-ink/20 bg-transparent text-ink hover:bg-paper2;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold tracking-widest text-green;
+  }
+}
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #9c7424;
+  outline-offset: 4px;
 }

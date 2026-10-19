@@ -1,82 +1,64 @@
 rules_version = '2';
 service cloud.firestore {
-  match /databases/{database}/documents {
-
-    // --- Public-facing intake forms: anyone can create, nobody can edit/delete client-side.
-    // Staff updates (status changes, assigning box numbers, etc.) go through the
-    // Admin SDK or Firebase Console until an authenticated staff role exists.
-
-    match /pickups/{id} {
-      allow create: if request.resource.data.contactName is string
-                    && request.resource.data.phone is string
-                    && request.resource.data.weightKg is number;
-      allow read: if true;
-      allow update, delete: if false;
-    }
-
-    match /deliveries/{id} {
-      allow create: if request.resource.data.requesterName is string
-                    && request.resource.data.fromLocation is string
-                    && request.resource.data.toLocation is string;
-      allow read: if true;
-      allow update, delete: if false;
-    }
-
-    match /poboxes/{id} {
-      allow create: if request.resource.data.orgName is string
-                    && request.resource.data.contactEmail is string;
-      allow read: if true;
-      allow update, delete: if false;
-    }
-
-    match /submissions/{id} {
-      allow create: if request.resource.data.submitterName is string
-                    && request.resource.data.type in ["tender", "job_application", "receipt"];
-      allow read: if true;
-      allow update, delete: if false;
-    }
-
-    match /exports/{id} {
-      allow create: if request.resource.data.requesterName is string
-                    && request.resource.data.goodsDescription is string;
-      allow read: if true;
-      allow update, delete: if false;
-    }
-
-    match /auctions/{id} {
-      allow create: if request.resource.data.title is string
-                    && request.resource.data.startingPriceRwf is number;
-      allow read: if true;
-      allow update, delete: if false;
-    }
-
-    match /trade_inquiries/{id} {
-      allow create: if request.resource.data.companyName is string
-                    && request.resource.data.contactEmail is string;
-      allow read: if true;
-      allow update, delete: if false;
-    }
-
-    match /shops/{id} {
-      allow create: if request.resource.data.shopName is string
-                    && request.resource.data.phone is string;
-      allow read: if true;
-      allow update, delete: if false;
-    }
-
-    // Kashi applications contain partial ID data — readable only via the
-    // Admin SDK (staff review), never directly by clients.
-    match /kashi_applications/{id} {
-      allow create: if request.resource.data.fullName is string
-                    && request.resource.data.idReference is string
-                    && request.resource.data.idReference.size() <= 4;
-      allow read, update, delete: if false;
-    }
-
-    // Shipments: read-only to the public (tracking lookups); staff/integration writes only.
-    match /shipments/{id} {
-      allow read: if true;
-      allow write: if false;
-    }
+ match /databases/{database}/documents {
+  function signedIn() { return request.auth != null; }
+  function staff() { return signedIn() && request.auth.token.get('staff', false) == true; }
+  function owner() { return signedIn() && resource.data.ownerId == request.auth.uid; }
+  function text(value, maximum) { return value is string && value.size() > 0 && value.size() <= maximum; }
+  function newBooking() {
+   return signedIn() && request.resource.data.ownerId == request.auth.uid
+    && request.resource.data.status == 'requested'
+    && request.resource.data.createdAt == request.time
+    && request.resource.data.weightKg is number
+    && request.resource.data.weightKg > 0 && request.resource.data.weightKg <= 1000;
   }
+  function cancel() {
+   return owner() && resource.data.status == 'requested'
+    && request.resource.data.status == 'cancelled'
+    && request.resource.data.updatedAt == request.time
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt']);
+  }
+  function staffUpdate(kind) {
+   let before = resource.data.status;
+   let after = request.resource.data.status;
+   return staff()
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt','trackingCode'])
+    && request.resource.data.updatedAt == request.time
+    && text(request.resource.data.trackingCode, 25)
+    && ((kind == 'pickups' && ((before == 'requested' && after == 'scheduled') || (before == 'scheduled' && after == 'collected') || (before == 'collected' && after == 'delivered')))
+     || (kind == 'deliveries' && ((before == 'requested' && after == 'en_route') || (before == 'en_route' && after == 'delivered'))));
+  }
+  match /pickups/{id} {
+   allow create: if newBooking()
+    && request.resource.data.keys().hasAll(['ownerId','contactName','phone','address','weightKg','size','notes','status','createdAt'])
+    && request.resource.data.keys().hasOnly(['ownerId','contactName','phone','address','weightKg','size','notes','status','createdAt'])
+    && text(request.resource.data.contactName,120) && text(request.resource.data.phone,30)
+    && text(request.resource.data.address,500) && request.resource.data.size in ['small','medium','large']
+    && request.resource.data.notes is string && request.resource.data.notes.size() <= 2000;
+   allow read: if owner() || staff();
+   allow update: if cancel() || staffUpdate('pickups');
+  }
+  match /deliveries/{id} {
+   allow create: if newBooking()
+    && request.resource.data.keys().hasAll(['ownerId','requesterName','phone','fromLocation','toLocation','goodsType','weightKg','status','createdAt'])
+    && request.resource.data.keys().hasOnly(['ownerId','requesterName','phone','fromLocation','toLocation','goodsType','weightKg','status','createdAt'])
+    && text(request.resource.data.phone,30) && text(request.resource.data.requesterName,120) && text(request.resource.data.fromLocation,500)
+    && text(request.resource.data.toLocation,500) && text(request.resource.data.goodsType,200);
+   allow read: if owner() || staff();
+   allow update: if cancel() || staffUpdate('deliveries');
+  }
+  match /public_shipments/{code} {
+   // Tracking codes are unguessable references. Public enumeration is forbidden.
+   allow get: if true;
+   allow list: if staff();
+   allow create, update: if staff()
+    && request.resource.data.keys().hasOnly(['trackingCode','status','originOffice','destination','history'])
+    && request.resource.data.trackingCode == code
+    && request.resource.data.status in ['accepted','in_transit','out_for_delivery','delivered']
+    && request.resource.data.originOffice is string && request.resource.data.destination is string
+    && request.resource.data.history is list && request.resource.data.history.size() <= 10;
+  }
+  // Future services stay closed until their operational workflows are ready.
+  match /{document=**} { allow read, write: if false; }
+ }
 }

@@ -1,13 +1,17 @@
+import Link from "next/link";
 export default function Footer() {
   return (
-    <footer className="mt-16 bg-ink py-12 text-paper">
-      <div className="mx-auto max-w-4xl px-6">
-        <p className="max-w-md text-sm text-[#C3CADA]">
-          Proposed Phase 1 prototype — pickups, tracking, pricing and local deliveries,
-          built to run independently of Iposita's internal systems.
-        </p>
-        <p className="mt-6 border-t border-white/15 pt-4 text-xs text-[#8C97AC]">
-        Copyright Hub-In Rwanda — Kigali.
+    <footer className="border-t border-ink/10">
+      <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-5 px-6 py-8 text-sm text-inkSoft">
+        <p>DigiPosita · Delivery services pilot</p>
+        <div className="flex gap-5">
+          <Link href="/account">My requests</Link>
+          <Link href="/tracking">Tracking</Link>
+        </div>
+        <p className="w-full text-xs">
+          Service availability and collection windows are confirmed by the
+          operations team. DigiPosita is a pilot; official postal service
+          affiliation has not been verified.
         </p>
       </div>
     </footer>
