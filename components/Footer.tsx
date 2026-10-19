@@ -10,8 +10,7 @@ export default function Footer() {
         </div>
         <p className="w-full text-xs">
           Service availability and collection windows are confirmed by the
-          operations team. DigiPosita is a pilot; official postal service
-          affiliation has not been verified.
+          operations team. Pricing is confirmed before processing.
         </p>
       </div>
     </footer>
