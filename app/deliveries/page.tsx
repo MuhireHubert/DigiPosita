@@ -40,12 +40,10 @@ export default function DeliveriesPage() {
       q,
       (snap) => {
         setRequests(
-          snap.docs
-            .slice(0, 10)
-            .map((d) => ({
-              id: d.id,
-              ...(d.data() as Omit<DeliveryRequest, "id">),
-            })),
+          snap.docs.slice(0, 10).map((d) => ({
+            id: d.id,
+            ...(d.data() as Omit<DeliveryRequest, "id">),
+          })),
         );
       },
       () => setError("Could not load your requests. Please try again."),
