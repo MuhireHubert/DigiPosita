@@ -378,6 +378,7 @@ function BidHistory() {
             <p className="mt-2 text-sm">
               Your bid: RWF {b.amount.toLocaleString("en-US")}
             </p>
+            <BidResult auctionId={b.auctionId} bidId={b.id} />
           </li>
         ))}
       </ul>
@@ -388,4 +389,34 @@ function BidHistory() {
       )}
     </section>
   );
+}
+
+function BidResult({ auctionId, bidId }: { auctionId: string; bidId: string }) {
+  const [result, setResult] = useState("Loading auction status…");
+  useEffect(
+    () =>
+      onSnapshot(
+        doc(db, "auction_listings", auctionId),
+        (snap) => {
+          if (!snap.exists()) {
+            setResult("Auction unavailable");
+            return;
+          }
+          const auction = snap.data();
+          const leading = auction.lastBidId === bidId;
+          setResult(
+            auction.status === "closed"
+              ? leading
+                ? "Winning bid · staff will arrange payment and collection"
+                : "Auction closed · outbid"
+              : leading
+                ? "Leading bid"
+                : "Outbid",
+          );
+        },
+        () => setResult("Could not load auction status"),
+      ),
+    [auctionId, bidId],
+  );
+  return <p className="mt-2 text-xs font-semibold text-green">{result}</p>;
 }

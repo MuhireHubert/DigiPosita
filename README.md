@@ -4,19 +4,19 @@ One customer account and one staff service desk for postal, delivery, business a
 
 ## Service workflows
 
-| Service                  | Customer experience                                                           | Staff processing                                                                                           |
-| ------------------------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Pickups                  | Book collection, cancel before processing, track parcel                       | Schedule → collect → deliver, with transactional tracking updates                                          |
-| Deliveries               | Request a local delivery and follow its status                                | Dispatch → deliver                                                                                         |
-| Tracking                 | Look up a parcel by its unguessable code without signing in                   | Publish a history with each delivery update                                                                |
-| Documents                | Submit a PDF/JPEG/PNG up to 10 MB; receive a reference and download privately | Download the document and review, request information, approve or reject                                   |
-| P.O. boxes               | Apply for a personal, business or institutional box; see the assigned number  | Review and reserve a box number at the requested office; duplicate assignments at that office are rejected |
-| Shops                    | Browse/search the public directory; register a shop with publication consent  | Review and publish approved shop details atomically                                                        |
-| Trade & AfCFTA           | Submit an import/export assistance enquiry and reply to the desk              | Review, request clarification and record the response                                                      |
-| Exports / China shipping | Submit goods, destination and weight for a shipping quote                     | Review and respond with quote details and next steps                                                       |
-| Auctions                 | Browse live listings, place whole-RWF bids, and view personal bid history     | Publish listings, close expired auctions, and see the winning bidder's private contact email               |
-| IpositaKashi             | Apply for a personal or business account and follow verification              | Review and respond; approval here does not activate a financial account                                    |
-| Other services           | Postal enquiries, delivery issues, feedback and support                       | Shared review and response workflow                                                                        |
+| Service                  | Customer experience                                                                                              | Staff processing                                                                                           |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Pickups                  | Book collection, cancel before processing, track parcel                                                          | Schedule → collect → deliver, with transactional tracking updates                                          |
+| Deliveries               | Request a local delivery and follow its status                                                                   | Dispatch → deliver                                                                                         |
+| Tracking                 | Look up a parcel by its unguessable code without signing in                                                      | Publish a history with each delivery update                                                                |
+| Documents                | Submit a PDF/JPEG/PNG up to 10 MB; receive a reference and download privately                                    | Download the document and review, request information, approve or reject                                   |
+| P.O. boxes               | Apply for a personal, business or institutional box; see the assigned number                                     | Review and reserve a box number at the requested office; duplicate assignments at that office are rejected |
+| Shops                    | Browse/search the public directory; register a shop with publication consent                                     | Review and publish approved shop details atomically                                                        |
+| Trade & AfCFTA           | Submit an import/export assistance enquiry and reply to the desk                                                 | Review, request clarification and record the response                                                      |
+| Exports / China shipping | Submit goods, destination and weight for a shipping quote                                                        | Review and respond with quote details and next steps                                                       |
+| Auctions                 | Browse live listings, place whole-RWF bids, and view personal bid history and live leading/outbid/winning status | Publish listings, close expired auctions, and see the winning bidder's private contact email               |
+| IpositaKashi             | Apply for a personal or business account and follow verification                                                 | Review and respond; approval here does not activate a financial account                                    |
+| Other services           | Postal enquiries, delivery issues, feedback and support                                                          | Shared review and response workflow                                                                        |
 
 `/services` provides a searchable service catalogue. `/account` includes bookings, service requests, responses, box assignments and bid history. `/staff` combines courier operations, a filterable service desk and auction management.
 
