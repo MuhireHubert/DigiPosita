@@ -10,9 +10,10 @@ export default function Nav() {
   const { user, staff } = useAuth();
   const [error, setError] = useState("");
   const links = [
-    ["/pickups", "Send a parcel"],
+    ["/services", "All services"],
     ["/tracking", "Track"],
-    ["/deliveries", "Local delivery"],
+    ["/auctions", "Auctions"],
+    ["/shops", "Shops"],
     ["/account", "My requests"],
     ...(staff ? [["/staff", "Operations"]] : []),
   ];
@@ -22,7 +23,11 @@ export default function Nav() {
         <div className="flex items-center justify-between gap-4">
           <Link href="/" className="font-display text-2xl font-bold">
             Digi<span className="text-goldDeep">Posita</span>
-            <span className="ml-2 text-xs font-normal text-inkSoft">PILOT</span>
+            <span className="ml-2 text-xs font-normal text-inkSoft">
+              {process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true"
+                ? "LOCAL DEMO"
+                : "PILOT"}
+            </span>
           </Link>
           {user ? (
             <button

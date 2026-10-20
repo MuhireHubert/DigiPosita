@@ -6,9 +6,9 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "DigiPosita | Pickups & delivery",
+  title: "DigiPosita | Digital services",
   description:
-    "Request pickups, arrange local deliveries, and follow your parcels in Rwanda.",
+    "Access postal, delivery, business and trade services from one integrated digital platform.",
 };
 
 export default function RootLayout({

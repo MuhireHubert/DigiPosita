@@ -15,6 +15,13 @@ export default function ServiceGate({
     "/deliveries",
     "/account",
     "/staff",
+    "/submissions",
+    "/poboxes",
+    "/exports",
+    "/trade",
+    "/kashi",
+    "/other",
+    "/shops/register",
   ].includes(path);
   if (!protectedPage) return <>{children}</>;
   let message = "";

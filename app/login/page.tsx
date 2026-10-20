@@ -24,13 +24,45 @@ export default function Login() {
       )(auth, email.trim(), password);
       const next = new URLSearchParams(window.location.search).get("next");
       router.replace(
-        next && ["/pickups", "/deliveries", "/account", "/staff"].includes(next)
+        next &&
+          [
+            "/pickups",
+            "/deliveries",
+            "/account",
+            "/staff",
+            "/submissions",
+            "/poboxes",
+            "/exports",
+            "/trade",
+            "/kashi",
+            "/other",
+            "/shops/register",
+            "/auctions",
+          ].includes(next)
           ? next
           : "/account",
       );
     } catch {
       setMessage(
         "Unable to sign in. Check your details, or use password reset. New accounts need a password of at least 8 characters.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function demo(staff: boolean) {
+    setBusy(true);
+    setMessage("");
+    try {
+      await signInWithEmailAndPassword(
+        auth,
+        staff ? "staff@digiposita.test" : "customer@digiposita.test",
+        "DigiPositaDemo!2026",
+      );
+      router.replace(staff ? "/staff" : "/account");
+    } catch {
+      setMessage(
+        "Local demo accounts are not ready. Run npm run seed:demo with the emulators running.",
       );
     } finally {
       setBusy(false);
@@ -56,8 +88,32 @@ export default function Login() {
         {register ? "Create your account" : "Welcome back"}
       </h1>
       <p className="mt-3 text-inkSoft">
-        Book a pickup. Follow every step. All in one place.
+        Submit requests. Follow every response. All in one place.
       </p>
+      {process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true" && (
+        <div className="my-6 rounded-xl border border-green/20 bg-paper2 p-5">
+          <p className="text-sm font-semibold">Explore the local demo</p>
+          <p className="mt-2 text-xs text-inkSoft">
+            Sample accounts use local emulators. These are not live services.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button
+              className="button"
+              disabled={busy}
+              onClick={() => demo(false)}
+            >
+              Customer demo
+            </button>
+            <button
+              className="button secondary"
+              disabled={busy}
+              onClick={() => demo(true)}
+            >
+              Staff demo
+            </button>
+          </div>
+        </div>
+      )}
       {!configured ? (
         <p className="mt-8" role="status">
           Account services are being set up. Please check back soon.

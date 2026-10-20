@@ -110,7 +110,7 @@ test("mobile home fits viewport and core navigation remains available", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: /Less time in line/ }),
+    page.getByRole("heading", { name: /Your post office/ }),
   ).toBeVisible();
   await expect(page.getByRole("navigation")).toBeVisible();
   expect(

@@ -139,7 +139,7 @@ test("public tracking supports exact lookup but prevents enumeration and private
   await assertFails(setDoc(doc(db("alice"), "public_shipments", code), data));
   await assertFails(setDoc(ref, { ...data, phone: "private" }));
 });
-test("unfinished services reject customer writes and reads", async () => {
+test("legacy intake collections remain closed", async () => {
   for (const service of [
     "kashi_applications",
     "poboxes",
