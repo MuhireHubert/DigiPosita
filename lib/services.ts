@@ -35,9 +35,9 @@ export const services: DigitalService[] = [
   {
     key: "poboxes",
     path: "/poboxes",
-    title: "P.O. boxes",
+    title: "ePobox & P.O. boxes",
     description:
-      "Apply for a personal or business P.O. box and receive your assignment in your account.",
+      "Open the ePobox digital-address platform or apply for a physical P.O. box.",
     action: "Apply for a box",
     fields: [
       { key: "organization", label: "Individual or organization name" },
@@ -110,7 +110,7 @@ export const services: DigitalService[] = [
   {
     key: "kashi",
     path: "/kashi",
-    title: "IpositaKashi",
+    title: "Iposita Kashi",
     description:
       "Apply for a personal or business account and follow verification with the service team.",
     action: "Send account application",

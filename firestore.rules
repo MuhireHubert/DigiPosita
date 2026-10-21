@@ -2,9 +2,18 @@ rules_version = '2';
 service cloud.firestore {
  match /databases/{database}/documents {
   function signedIn() { return request.auth != null; }
-  function staff() { return signedIn() && request.auth.token.get('staff', false) == true; }
+  function staff() { return signedIn() && (request.auth.token.get('staff', false) == true || (exists(/databases/$(database)/documents/staff_access/$(request.auth.uid)) && get(/databases/$(database)/documents/staff_access/$(request.auth.uid)).data.role == 'admin')); }
   function owner() { return signedIn() && resource.data.ownerId == request.auth.uid; }
   function text(value, maximum) { return value is string && value.size() > 0 && value.size() <= maximum; }
+  function validLocation(v) {
+   return v is map && v.keys().hasAll(['latitude','longitude','accuracy','capturedAt']) && v.keys().hasOnly(['latitude','longitude','accuracy','capturedAt'])
+    && v.latitude is number && v.latitude >= -90 && v.latitude <= 90
+    && v.longitude is number && v.longitude >= -180 && v.longitude <= 180
+    && v.accuracy is number && v.accuracy >= 0 && v.accuracy <= 100000
+    && v.capturedAt is number && v.capturedAt > 0 && v.capturedAt <= request.time.toMillis();
+  }
+  function optionalLocation(key) { return !(key in request.resource.data) || validLocation(request.resource.data[key]); }
+  function optionalDirections(key) { return !(key in request.resource.data) || (request.resource.data[key] is string && request.resource.data[key].size() <= 2000); }
   function newBooking() {
    return signedIn() && request.resource.data.ownerId == request.auth.uid
     && request.resource.data.status == 'requested'
@@ -31,7 +40,8 @@ service cloud.firestore {
   match /pickups/{id} {
    allow create: if newBooking()
     && request.resource.data.keys().hasAll(['ownerId','contactName','phone','address','weightKg','size','notes','status','createdAt'])
-    && request.resource.data.keys().hasOnly(['ownerId','contactName','phone','address','weightKg','size','notes','status','createdAt'])
+    && request.resource.data.keys().hasOnly(['ownerId','contactName','phone','address','weightKg','size','notes','status','createdAt','location','directions'])
+    && optionalLocation('location') && optionalDirections('directions')
     && text(request.resource.data.contactName,120) && text(request.resource.data.phone,30)
     && text(request.resource.data.address,500) && request.resource.data.size in ['small','medium','large']
     && request.resource.data.notes is string && request.resource.data.notes.size() <= 2000;
@@ -41,7 +51,8 @@ service cloud.firestore {
   match /deliveries/{id} {
    allow create: if newBooking()
     && request.resource.data.keys().hasAll(['ownerId','requesterName','phone','fromLocation','toLocation','goodsType','weightKg','status','createdAt'])
-    && request.resource.data.keys().hasOnly(['ownerId','requesterName','phone','fromLocation','toLocation','goodsType','weightKg','status','createdAt'])
+    && request.resource.data.keys().hasOnly(['ownerId','requesterName','phone','fromLocation','toLocation','goodsType','weightKg','status','createdAt','fromCoordinates','toCoordinates','fromDirections','toDirections'])
+    && optionalLocation('fromCoordinates') && optionalLocation('toCoordinates') && optionalDirections('fromDirections') && optionalDirections('toDirections')
     && text(request.resource.data.phone,30) && text(request.resource.data.requesterName,120) && text(request.resource.data.fromLocation,500)
     && text(request.resource.data.toLocation,500) && text(request.resource.data.goodsType,200);
    allow read: if owner() || staff();
@@ -193,6 +204,9 @@ service cloud.firestore {
     && getAfter(/databases/$(database)/documents/auction_listings/$(request.resource.data.auctionId)/bids/$(bidId)).data.createdAt == request.time
     && request.resource.data.amount == getAfter(/databases/$(database)/documents/auction_listings/$(request.resource.data.auctionId)/bids/$(bidId)).data.amount;
   }
+
+  // Access records are provisioned only through a trusted administrator, never by clients.
+  match /staff_access/{uid} { allow get: if signedIn() && request.auth.uid == uid; }
 
   // Legacy collections remain closed.
   match /{document=**} { allow read, write: if false; }

@@ -5,7 +5,8 @@ import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
 } from "firebase/auth";
-import { auth, configured } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db, configured } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -19,9 +20,15 @@ export default function Login() {
     setBusy(true);
     setMessage("");
     try {
-      await (
+      const credential = await (
         register ? createUserWithEmailAndPassword : signInWithEmailAndPassword
       )(auth, email.trim(), password);
+      const access = await getDoc(
+        doc(db, "staff_access", credential.user.uid),
+      ).catch(() => null);
+      const token = await credential.user.getIdTokenResult();
+      const staff =
+        access?.data()?.role === "admin" || token.claims.staff === true;
       const next = new URLSearchParams(window.location.search).get("next");
       router.replace(
         next &&
@@ -40,7 +47,9 @@ export default function Login() {
             "/auctions",
           ].includes(next)
           ? next
-          : "/account",
+          : staff
+            ? "/staff"
+            : "/account",
       );
     } catch {
       setMessage(

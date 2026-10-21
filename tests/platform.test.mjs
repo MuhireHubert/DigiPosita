@@ -407,6 +407,14 @@ test("document storage enforces privacy, file limits and immutability after subm
   );
   await assertSucceeds(getBytes(ref(alice, path)));
   await assertFails(getBytes(ref(bob, path)));
+  await env.withSecurityRulesDisabled(async (ctx) =>
+    setDoc(doc(ctx.firestore(), "staff_access", "approved-admin"), {
+      role: "admin",
+    }),
+  );
+  await assertSucceeds(
+    getBytes(ref(env.authenticatedContext("approved-admin").storage(), path)),
+  );
   await setDoc(
     doc(db("alice"), "service_requests", "one"),
     request("submissions"),

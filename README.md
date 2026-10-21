@@ -135,3 +135,13 @@ Deploy to a Node hosting service that supports Next.js 15. Set public Firebase c
 Confirm the operator's service areas, tariffs, office/box inventory, document acceptance policy, auction terms, customer support details, privacy/retention policy and staffing before a public launch. Uploaded documents need an operational retention and malware-scanning process. This platform records service requests and staff actions; actual customs processing, postal delivery, physical P.O. boxes and financial account verification remain with the operating service teams.
 
 IpositaKashi currently supports applications and review only. Deposits, withdrawals, balances, money transfers and payments require the chosen financial provider and its integration; none are simulated here. Auction payments and collection are arranged by staff after closing; automated checkout/settlement is not included. Email/SMS notifications, dispatch assignment, proof of delivery, pagination beyond the latest 50/100 records, and provider integrations are future work. The full development-tool dependency audit can still contain findings even when the production dependency audit is clean.
+
+### Staff operations and booking locations
+
+The protected `/staff` portal separates pickup, delivery, service-application and IPOSITA-owned auction desks. Staff can search and filter booking queues and open customer-provided coordinate pins in Google Maps. Auction publication remains restricted to staff; the seller is IPOSITA Rwanda.
+
+A customer can optionally capture a one-time GPS pin on each pickup, collection or delivery-destination form, with the browser's explicit permission. Coordinates, reported accuracy, capture time and typed landmark directions are stored only with the private booking. They are never copied into public tracking. Manual addresses remain required and work when location permission is denied. Deployment response headers permit geolocation only for the same origin.
+
+Staff access can also be provisioned in `staff_access/{Firebase UID}` with `{role: "admin"}` through the trusted Firebase console/Admin SDK. Clients can read their own access record but cannot create, modify, list or delete role records. No email/password pair grants an automatic role. Existing `staff: true` custom claims remain supported. Sign out and back in after provisioning access.
+
+`/poboxes` links to the separate ePobox platform for digital-address services and offers a distinct physical P.O. box application. No shared login or API synchronization is claimed. `/kashi` explains financial service categories and accepts applications/enquiries only; no funds are moved or loans approved by this portal.

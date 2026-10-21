@@ -16,10 +16,8 @@ export default function ServiceGate({
     "/account",
     "/staff",
     "/submissions",
-    "/poboxes",
     "/exports",
     "/trade",
-    "/kashi",
     "/other",
     "/shops/register",
   ].includes(path);

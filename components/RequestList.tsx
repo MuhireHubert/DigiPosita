@@ -1,4 +1,5 @@
 "use client";
+import { LocationDetails } from "./LocationCapture";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
@@ -32,6 +33,8 @@ export default function RequestList({
   const [items, setItems] = useState<ServiceRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
   const [busy, setBusy] = useState<string | null>(null);
   useEffect(() => {
     if (!user || (operations && !staff)) return;
@@ -109,62 +112,132 @@ export default function RequestList({
           )}
         </div>
       )}
+      {operations && (
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <label className="text-sm">
+            Search bookings
+            <input
+              className="input mt-1"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Name, phone, address or reference"
+            />
+          </label>
+          <label className="text-sm">
+            Booking status
+            <select
+              className="input mt-1"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              {[
+                "all",
+                "requested",
+                ...Object.values(transitions[service]),
+                "cancelled",
+              ].map((s) => (
+                <option key={s} value={s}>
+                  {statusLabel(s)}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      )}
       <ul className="mt-5 space-y-4">
-        {items.map((item) => (
-          <li
-            key={item.id}
-            className="rounded-lg border border-ink/10 bg-paper2 p-5"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 className="font-semibold">
-                {service === "pickups"
-                  ? item.address
-                  : `${item.fromLocation} → ${item.toLocation}`}
-              </h3>
-              <span className="rounded-full bg-white px-3 py-1 text-xs font-medium capitalize">
-                {statusLabel(item.status)}
-              </span>
-            </div>
-            <p className="mt-2 text-sm text-inkSoft">
-              {item.contactName || item.requesterName} · {item.weightKg} kg{" "}
-              {operations && item.phone ? `· ${item.phone}` : ""}
-            </p>
-            {operations && item.notes && (
-              <p className="mt-2 text-sm">{item.notes}</p>
-            )}
-            <p className="mt-2 break-all font-mono text-xs text-inkSoft">
-              Reference: {item.id}
-            </p>
-            {item.trackingCode && (
-              <Link
-                className="mt-3 block break-all text-sm font-semibold text-green"
-                href={`/tracking?code=${encodeURIComponent(item.trackingCode)}`}
-              >
-                Track {item.trackingCode} →
-              </Link>
-            )}
-            {operations && transitions[service][item.status] && (
-              <button
-                className="button mt-4"
-                disabled={busy !== null}
-                onClick={() => change(item)}
-              >
-                {busy === item.id
-                  ? "Updating…"
-                  : `Mark ${statusLabel(transitions[service][item.status])}`}
-              </button>
-            )}
-            {!operations && item.status === "requested" && (
-              <button
-                className="mt-4 text-sm text-stamp"
-                disabled={busy !== null}
-                onClick={() => change(item, true)}
-              >
-                {busy === item.id ? "Cancelling…" : "Cancel request"}
-              </button>
-            )}
-          </li>
-        ))}
+        {items
+          .filter(
+            (item) =>
+              (!operations || filter === "all" || item.status === filter) &&
+              (!operations ||
+                [
+                  item.id,
+                  item.contactName,
+                  item.requesterName,
+                  item.phone,
+                  item.address,
+                  item.fromLocation,
+                  item.toLocation,
+                ]
+                  .join(" ")
+                  .toLowerCase()
+                  .includes(search.toLowerCase())),
+          )
+          .map((item) => (
+            <li
+              key={item.id}
+              className="rounded-lg border border-ink/10 bg-paper2 p-5"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h3 className="font-semibold">
+                  {service === "pickups"
+                    ? item.address
+                    : `${item.fromLocation} → ${item.toLocation}`}
+                </h3>
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium capitalize">
+                  {statusLabel(item.status)}
+                </span>
+              </div>
+              <p className="mt-2 text-sm text-inkSoft">
+                {item.contactName || item.requesterName} · {item.weightKg} kg{" "}
+                {operations && item.phone ? `· ${item.phone}` : ""}
+              </p>
+              {operations && item.notes && (
+                <p className="mt-2 text-sm">{item.notes}</p>
+              )}
+              {service === "pickups" ? (
+                <LocationDetails
+                  label="Pickup"
+                  location={item.location}
+                  directions={item.directions}
+                />
+              ) : (
+                <>
+                  <LocationDetails
+                    label="Collection"
+                    location={item.fromCoordinates}
+                    directions={item.fromDirections}
+                  />
+                  <LocationDetails
+                    label="Destination"
+                    location={item.toCoordinates}
+                    directions={item.toDirections}
+                  />
+                </>
+              )}
+              <p className="mt-2 break-all font-mono text-xs text-inkSoft">
+                Reference: {item.id}
+              </p>
+              {item.trackingCode && (
+                <Link
+                  className="mt-3 block break-all text-sm font-semibold text-green"
+                  href={`/tracking?code=${encodeURIComponent(item.trackingCode)}`}
+                >
+                  Track {item.trackingCode} →
+                </Link>
+              )}
+              {operations && transitions[service][item.status] && (
+                <button
+                  className="button mt-4"
+                  disabled={busy !== null}
+                  onClick={() => change(item)}
+                >
+                  {busy === item.id
+                    ? "Updating…"
+                    : `Mark ${statusLabel(transitions[service][item.status])}`}
+                </button>
+              )}
+              {!operations && item.status === "requested" && (
+                <button
+                  className="mt-4 text-sm text-stamp"
+                  disabled={busy !== null}
+                  onClick={() => change(item, true)}
+                >
+                  {busy === item.id ? "Cancelling…" : "Cancel request"}
+                </button>
+              )}
+            </li>
+          ))}
       </ul>
     </section>
   );

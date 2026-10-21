@@ -1,5 +1,8 @@
 "use client";
 
+import LocationCapture, {
+  type SavedLocation,
+} from "@/components/LocationCapture";
 import { useEffect, useState } from "react";
 import {
   addDoc,
@@ -25,6 +28,14 @@ export default function DeliveriesPage() {
     goodsType: "",
     weightKg: "",
   });
+  const [fromCoordinates, setFromCoordinates] = useState<SavedLocation | null>(
+    null,
+  );
+  const [toCoordinates, setToCoordinates] = useState<SavedLocation | null>(
+    null,
+  );
+  const [fromDirections, setFromDirections] = useState("");
+  const [toDirections, setToDirections] = useState("");
   const [saving, setSaving] = useState(false);
 
   const [error, setError] = useState("");
@@ -65,6 +76,10 @@ export default function DeliveriesPage() {
         fromLocation: form.fromLocation,
         toLocation: form.toLocation,
         goodsType: form.goodsType,
+        fromDirections,
+        toDirections,
+        ...(fromCoordinates ? { fromCoordinates } : {}),
+        ...(toCoordinates ? { toCoordinates } : {}),
         weightKg: parseFloat(form.weightKg) || 0,
         status: "requested",
         createdAt: serverTimestamp(),
@@ -77,6 +92,10 @@ export default function DeliveriesPage() {
         goodsType: "",
         weightKg: "",
       });
+      setFromCoordinates(null);
+      setToCoordinates(null);
+      setFromDirections("");
+      setToDirections("");
       setSent(true);
     } catch {
       setError("Could not save your delivery. Please try again.");
@@ -119,6 +138,20 @@ export default function DeliveriesPage() {
           value={form.fromLocation}
           onChange={(e) => setForm({ ...form, fromLocation: e.target.value })}
         />
+        <LocationCapture
+          label="Collection"
+          value={fromCoordinates}
+          onChange={setFromCoordinates}
+        />
+        <label className="block text-sm">
+          Collection directions / landmark
+          <textarea
+            maxLength={2000}
+            className="input mt-1"
+            value={fromDirections}
+            onChange={(e) => setFromDirections(e.target.value)}
+          />
+        </label>
         <input
           required
           placeholder="To (e.g. Kimironko supermarket)"
@@ -127,6 +160,20 @@ export default function DeliveriesPage() {
           value={form.toLocation}
           onChange={(e) => setForm({ ...form, toLocation: e.target.value })}
         />
+        <LocationCapture
+          label="Destination"
+          value={toCoordinates}
+          onChange={setToCoordinates}
+        />
+        <label className="block text-sm">
+          Destination directions / landmark
+          <textarea
+            maxLength={2000}
+            className="input mt-1"
+            value={toDirections}
+            onChange={(e) => setToDirections(e.target.value)}
+          />
+        </label>
         <input
           required
           placeholder="Goods (e.g. Irish potatoes)"

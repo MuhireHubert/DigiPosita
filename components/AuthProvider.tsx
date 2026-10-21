@@ -1,7 +1,8 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
 import { onIdTokenChanged, type User } from "firebase/auth";
-import { auth, configured } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db, configured } from "@/lib/firebase";
 const Context = createContext<{
   user: User | null;
   loading: boolean;
@@ -31,11 +32,19 @@ export default function AuthProvider({
       async (user) => {
         try {
           const token = user ? await user.getIdTokenResult() : null;
+          const access =
+            user && token?.claims.staff !== true
+              ? await getDoc(doc(db, "staff_access", user.uid)).catch(
+                  () => null,
+                )
+              : null;
           if (active && auth.currentUser === user)
             setState({
               user,
               loading: false,
-              staff: token?.claims.staff === true,
+              staff:
+                token?.claims.staff === true ||
+                access?.data()?.role === "admin",
             });
         } catch {
           if (active) setState({ user: null, loading: false, staff: false });

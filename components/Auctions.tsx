@@ -135,7 +135,12 @@ function AuctionForm() {
       onSubmit={publish}
       className="mt-5 space-y-4 rounded-xl border border-ink/10 p-6"
     >
-      <h3 className="font-display text-xl">Publish an auction</h3>
+      <h3 className="font-display text-xl">List an IPOSITA-owned item</h3>
+      <p className="text-sm text-inkSoft">
+        Only authorized IPOSITA staff can publish existing IPOSITA-owned assets.
+        Include the asset reference, condition, inspection details and
+        collection location in the description.
+      </p>
       <label className="block text-sm">
         Item title
         <input
@@ -147,7 +152,7 @@ function AuctionForm() {
         />
       </label>
       <label className="block text-sm">
-        Item description
+        Item description, condition & collection arrangements
         <textarea
           required
           maxLength={2000}
@@ -252,6 +257,9 @@ function AuctionCard({
           {item.status === "closed" ? "Closed" : expired ? "Ended" : "Open"}
         </span>
       </div>
+      <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-green">
+        Seller: IPOSITA Rwanda
+      </p>
       <p className="mt-4 whitespace-pre-wrap text-sm text-inkSoft">
         {item.description}
       </p>

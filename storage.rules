@@ -1,7 +1,7 @@
 rules_version = '2';
 service firebase.storage {
  match /b/{bucket}/o {
-  function staff(){return request.auth != null && request.auth.token.get('staff',false) == true;}
+  function staff(){return request.auth != null && (request.auth.token.get('staff',false) == true || (firestore.exists(/databases/(default)/documents/staff_access/$(request.auth.uid)) && firestore.get(/databases/(default)/documents/staff_access/$(request.auth.uid)).data.role == 'admin'));}
   match /serviceDocuments/{uid}/{requestId}/document {
    allow read: if request.auth != null && (request.auth.uid == uid || staff());
    allow create: if request.auth != null && request.auth.uid == uid

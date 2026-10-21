@@ -1,3 +1,4 @@
+import type { SavedLocation } from "@/components/LocationCapture";
 import { doc, runTransaction, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase";
 export type Service = "pickups" | "deliveries";
@@ -15,6 +16,12 @@ export interface ServiceRequest {
   goodsType?: string;
   weightKg: number;
   notes?: string;
+  location?: SavedLocation;
+  directions?: string;
+  fromCoordinates?: SavedLocation;
+  toCoordinates?: SavedLocation;
+  fromDirections?: string;
+  toDirections?: string;
   createdAt?: { toMillis(): number };
 }
 export const transitions: Record<Service, Record<string, string>> = {

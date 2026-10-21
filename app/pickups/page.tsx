@@ -2,6 +2,9 @@
 
 export const dynamic = "force-dynamic";
 
+import LocationCapture, {
+  type SavedLocation,
+} from "@/components/LocationCapture";
 import { useState } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { useAuth } from "@/components/AuthProvider";
@@ -9,6 +12,8 @@ import { db } from "@/lib/firebase";
 
 export default function PickupsPage() {
   const { user } = useAuth();
+  const [location, setLocation] = useState<SavedLocation | null>(null);
+  const [directions, setDirections] = useState("");
   const [form, setForm] = useState({
     contactName: "",
     phone: "",
@@ -35,6 +40,8 @@ export default function PickupsPage() {
         weightKg: parseFloat(form.weightKg) || 0,
         size: form.size,
         notes: form.notes,
+        directions,
+        ...(location ? { location } : {}),
         status: "requested",
         createdAt: serverTimestamp(),
       });
@@ -92,6 +99,20 @@ export default function PickupsPage() {
             className="input"
             value={form.address}
             onChange={(e) => setForm({ ...form, address: e.target.value })}
+          />
+        </Field>
+        <LocationCapture
+          label="Pickup"
+          value={location}
+          onChange={setLocation}
+        />
+        <Field label="Directions / nearby landmark (optional)">
+          <textarea
+            maxLength={2000}
+            className="input"
+            value={directions}
+            onChange={(e) => setDirections(e.target.value)}
+            placeholder="District, sector, cell, village, street and a nearby landmark"
           />
         </Field>
         <Field label="Weight (kg)">

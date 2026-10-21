@@ -179,3 +179,97 @@ test("deliveries enforce ownership, content and status validation", async () => 
     }),
   );
 });
+
+test("precise booking pins are optional, validated, private and immutable", async () => {
+  const location = {
+    latitude: -1.9441,
+    longitude: 30.0619,
+    accuracy: 12,
+    capturedAt: Date.now() - 1000,
+  };
+  await assertSucceeds(
+    setDoc(
+      doc(db("alice"), "pickups", "pin"),
+      pickup({ location, directions: "Gasabo, Kacyiru; gate beside the shop" }),
+    ),
+  );
+  await assertSucceeds(
+    getDoc(doc(db("staff", { staff: true }), "pickups", "pin")),
+  );
+  await assertFails(getDoc(doc(db("bob"), "pickups", "pin")));
+  await assertFails(getDoc(doc(db(), "pickups", "pin")));
+  await assertFails(
+    updateDoc(doc(db("alice"), "pickups", "pin"), {
+      location: { ...location, latitude: 0 },
+    }),
+  );
+  await assertFails(
+    setDoc(
+      doc(db("alice"), "pickups", "invalid-lat"),
+      pickup({ location: { ...location, latitude: 91 } }),
+    ),
+  );
+  await assertFails(
+    setDoc(
+      doc(db("alice"), "pickups", "invalid-lng"),
+      pickup({ location: { ...location, longitude: 181 } }),
+    ),
+  );
+  await assertFails(
+    setDoc(
+      doc(db("alice"), "pickups", "invalid-accuracy"),
+      pickup({ location: { ...location, accuracy: -1 } }),
+    ),
+  );
+  await assertFails(
+    setDoc(
+      doc(db("alice"), "pickups", "invalid-fields"),
+      pickup({ location: { ...location, extra: "unexpected" } }),
+    ),
+  );
+  await assertFails(
+    setDoc(
+      doc(db("alice"), "pickups", "long-directions"),
+      pickup({ directions: "x".repeat(2001) }),
+    ),
+  );
+  const delivery = {
+    ownerId: "alice",
+    requesterName: "Alice",
+    phone: "+250788000000",
+    fromLocation: "Kacyiru",
+    toLocation: "Kimironko",
+    goodsType: "Parcel",
+    weightKg: 1,
+    status: "requested",
+    createdAt: serverTimestamp(),
+    fromCoordinates: location,
+    toCoordinates: { ...location, latitude: -1.95 },
+    fromDirections: "Gate A",
+    toDirections: "Gate B",
+  };
+  await assertSucceeds(setDoc(doc(db("alice"), "deliveries", "pin"), delivery));
+  await assertFails(getDoc(doc(db("bob"), "deliveries", "pin")));
+  await assertFails(
+    setDoc(doc(db("alice"), "deliveries", "invalid-pin"), {
+      ...delivery,
+      toCoordinates: { ...location, longitude: 190 },
+    }),
+  );
+});
+
+test("staff access must be provisioned by an administrator; clients cannot self-promote", async () => {
+  await assertFails(
+    setDoc(doc(db("alice"), "staff_access", "alice"), { role: "admin" }),
+  );
+  await env.withSecurityRulesDisabled(async (ctx) =>
+    setDoc(doc(ctx.firestore(), "staff_access", "operator"), { role: "admin" }),
+  );
+  await assertSucceeds(getDoc(doc(db("operator"), "staff_access", "operator")));
+  await assertFails(getDoc(doc(db("bob"), "staff_access", "operator")));
+  await assertSucceeds(setDoc(doc(db("alice"), "pickups", "one"), pickup()));
+  await assertSucceeds(getDoc(doc(db("operator"), "pickups", "one")));
+  await assertFails(
+    setDoc(doc(db("operator"), "staff_access", "bob"), { role: "admin" }),
+  );
+});
