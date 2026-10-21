@@ -39,16 +39,21 @@ export default function ServiceHero({ home = false }: { home?: boolean }) {
       </div>
       <div className="relative min-h-[280px] sm:min-h-[360px] lg:min-h-full">
         <Image
-          src="/images/postal-world.png"
-          alt="Illustration of a postal courier with parcels and a green delivery scooter against Kigali’s hills"
+          src="/images/courier-photo.jpg"
+          alt="A courier wearing a helmet and delivery bag checks his phone while seated on a scooter"
           fill
           priority
           sizes="(min-width: 1024px) 50vw, 100vw"
-          className="object-cover object-[48%_20%]"
+          className="object-cover object-[50%_65%]"
         />
-        <span className="absolute bottom-5 right-5 rounded-full bg-white/90 px-4 py-2 text-xs font-medium text-green shadow-sm">
-          A little closer. Every day.
-        </span>
+        <a
+          href="https://www.pexels.com/photo/a-deliveryman-on-a-scooter-7363198/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute bottom-5 right-5 rounded-full bg-white/95 px-4 py-2 text-xs font-medium text-green shadow-sm"
+        >
+          Photo: RDNE Stock project / Pexels ↗
+        </a>
       </div>
     </section>
   );
