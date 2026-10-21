@@ -7,7 +7,7 @@ html {
 }
 
 body {
-  background-color: theme("colors.paper");
+  background-color: #f8f9f5;
   color: theme("colors.ink");
 }
 
@@ -33,7 +33,7 @@ body {
   width: 100%;
   padding: 0.6rem 0.75rem;
   border: 1px solid rgba(20, 35, 61, 0.2);
-  border-radius: 2px;
+  border-radius: 10px;
   background: #fbfbf9;
   font-family: inherit;
   color: theme("colors.ink");
@@ -58,4 +58,18 @@ button:focus-visible,
 a:focus-visible {
   outline: 2px solid #9c7424;
   outline-offset: 4px;
+}
+
+::selection {
+  background: #d8e8d9;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
 }

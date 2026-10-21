@@ -18,10 +18,19 @@ export default function Nav() {
     ...(staff ? [["/staff", "Operations"]] : []),
   ];
   return (
-    <header className="border-b border-ink/10 bg-paper">
+    <header className="border-b border-ink/10 bg-white">
       <div className="mx-auto max-w-6xl px-6 py-5">
         <div className="flex items-center justify-between gap-4">
-          <Link href="/" className="font-display text-2xl font-bold">
+          <Link
+            href="/"
+            className="flex items-center font-display text-2xl font-bold"
+          >
+            <span
+              className="mr-2 flex h-9 w-9 items-center justify-center rounded-xl bg-green font-sans text-lg text-white"
+              aria-hidden="true"
+            >
+              ↗
+            </span>
             Digi<span className="text-goldDeep">Posita</span>
             <span className="ml-2 text-xs font-normal text-inkSoft">
               {process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true"
