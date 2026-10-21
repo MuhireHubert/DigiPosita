@@ -44,7 +44,7 @@ export default function ServiceHero({ home = false }: { home?: boolean }) {
           fill
           priority
           sizes="(min-width: 1024px) 50vw, 100vw"
-          className="object-cover object-[48%_center]"
+          className="object-cover object-[48%_20%]"
         />
         <span className="absolute bottom-5 right-5 rounded-full bg-white/90 px-4 py-2 text-xs font-medium text-green shadow-sm">
           A little closer. Every day.
