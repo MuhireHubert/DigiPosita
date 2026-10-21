@@ -1,68 +1,49 @@
-"use client";
-
-export const dynamic = 'force-dynamic';
-
-import { useState } from "react";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-
-export default function POBoxesPage() {
-  const [form, setForm] = useState({ orgName: "", orgType: "school", contactEmail: "", contactPhone: "" });
-  const [status, setStatus] = useState<"idle" | "saving" | "done" | "error">("idle");
-  const [refId, setRefId] = useState<string | null>(null);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setStatus("saving");
-    try {
-      const ref = await addDoc(collection(db, "poboxes"), {
-        ...form,
-        status: "pending",
-        createdAt: serverTimestamp(),
-      });
-      setRefId(ref.id);
-      setStatus("done");
-    } catch (err) {
-      console.error(err);
-      setStatus("error");
-    }
-  }
-
-  if (status === "done") {
-    return (
-      <main className="mx-auto max-w-lg px-6 py-16">
-        <h1 className="font-display text-2xl font-semibold">e-P.O. box requested</h1>
-        <p className="mt-3 text-inkSoft">Reference: <span className="font-mono text-ink">{refId}</span></p>
-        <p className="mt-2 text-sm text-inkSoft">A box number will be assigned once verified at an Iposita counter.</p>
-      </main>
-    );
-  }
-
+import Link from "next/link";
+import DigitalServiceForm from "@/components/DigitalServiceForm";
+export default function Page() {
   return (
-    <main className="mx-auto max-w-lg px-6 py-16">
-      <h1 className="font-display text-2xl font-semibold">Register an e-P.O. box</h1>
-      <p className="mt-2 text-sm text-inkSoft">For studios, schools, real estate agencies, notaries and banking services.</p>
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-        <input required placeholder="Organization name" className="input" value={form.orgName}
-          onChange={(e) => setForm({ ...form, orgName: e.target.value })} />
-        <select className="input" value={form.orgType} onChange={(e) => setForm({ ...form, orgType: e.target.value })}>
-          <option value="school">School</option>
-          <option value="studio">Studio</option>
-          <option value="real_estate">Real estate agency</option>
-          <option value="notary">Notary</option>
-          <option value="bank">Banking service</option>
-          <option value="other">Other</option>
-        </select>
-        <input required type="email" placeholder="Contact email" className="input" value={form.contactEmail}
-          onChange={(e) => setForm({ ...form, contactEmail: e.target.value })} />
-        <input required placeholder="Contact phone" className="input" value={form.contactPhone}
-          onChange={(e) => setForm({ ...form, contactPhone: e.target.value })} />
-        <button type="submit" disabled={status === "saving"}
-          className="rounded bg-ink px-5 py-2.5 text-white hover:bg-green disabled:opacity-60">
-          {status === "saving" ? "Saving…" : "Request box"}
-        </button>
-        {status === "error" && <p className="text-sm text-stamp">Couldn&rsquo;t save &mdash; check your Firebase config.</p>}
-      </form>
+    <main className="mx-auto max-w-4xl px-6 py-12">
+      <Link href="/services" className="text-sm text-green">
+        ← All services
+      </Link>
+      <p className="eyebrow mt-7">YOUR ADDRESS, CONNECTED</p>
+      <h1 className="mt-3 font-display text-4xl">
+        ePobox & physical P.O. boxes
+      </h1>
+      <p className="mt-4 max-w-2xl text-inkSoft">
+        Choose a digital postal address through ePobox, or request a physical
+        post-office box from the IPOSITA service team.
+      </p>
+      <section className="my-8 rounded-2xl bg-green p-7 text-white">
+        <h2 className="font-display text-3xl">
+          Your digital address with ePobox
+        </h2>
+        <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/85">
+          The existing ePobox platform connects digital addresses with GPS, Plus
+          Codes and post offices. Open ePobox to register or manage your digital
+          address and use its delivery services.
+        </p>
+        <a
+          href="https://epobox.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-5 inline-block rounded-lg bg-white px-5 py-3 text-sm font-semibold text-green"
+        >
+          Continue to ePobox ↗
+        </a>
+        <p className="mt-3 text-xs text-white/70">
+          Opens the separate ePobox platform. Its account, fees and service
+          terms apply.
+        </p>
+      </section>
+      <section className="rounded-2xl border border-ink/10 bg-white p-7">
+        <h2 className="font-display text-2xl">Request a physical P.O. box</h2>
+        <p className="mb-6 mt-3 text-sm text-inkSoft">
+          Choose your preferred post office. Staff will confirm availability and
+          send your box assignment to My requests.
+        </p>
+        <DigitalServiceForm kind="poboxes" />
+      </section>
     </main>
   );
 }

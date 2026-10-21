@@ -1,4 +1,8 @@
+import type { Timestamp } from "firebase/firestore";
+
 export interface Pickup {
+  ownerId: string;
+  trackingCode?: string;
   id?: string;
   contactName: string;
   phone: string;
@@ -6,8 +10,8 @@ export interface Pickup {
   weightKg: number;
   size: "small" | "medium" | "large";
   notes?: string;
-  status: "requested" | "scheduled" | "collected";
-  createdAt: number;
+  status: "requested" | "scheduled" | "collected" | "delivered" | "cancelled";
+  createdAt: Timestamp | null;
 }
 
 export interface Shipment {
@@ -20,14 +24,17 @@ export interface Shipment {
 }
 
 export interface DeliveryRequest {
+  ownerId: string;
+  phone: string;
+  trackingCode?: string;
   id?: string;
   requesterName: string;
   fromLocation: string;
   toLocation: string;
   goodsType: string;
   weightKg: number;
-  status: "requested" | "en_route" | "delivered";
-  createdAt: number;
+  status: "requested" | "en_route" | "delivered" | "cancelled";
+  createdAt: Timestamp | null;
 }
 
 export interface POBoxRequest {
@@ -38,7 +45,7 @@ export interface POBoxRequest {
   contactPhone: string;
   status: "pending" | "assigned";
   boxNumber?: string;
-  createdAt: number;
+  createdAt: Timestamp | null;
 }
 
 export interface Submission {
@@ -47,7 +54,7 @@ export interface Submission {
   type: "tender" | "job_application" | "receipt";
   description: string;
   status: "received" | "reviewed";
-  createdAt: number;
+  createdAt: Timestamp | null;
 }
 
 export interface ExportRequest {
@@ -59,7 +66,7 @@ export interface ExportRequest {
   destinationCountry: string;
   weightKg: number;
   status: "requested" | "quoted" | "booked";
-  createdAt: number;
+  createdAt: Timestamp | null;
 }
 
 export interface AuctionListing {
@@ -70,7 +77,7 @@ export interface AuctionListing {
   sellerName: string;
   closesAt: string;
   status: "open" | "closed";
-  createdAt: number;
+  createdAt: Timestamp | null;
 }
 
 export interface TradeInquiry {
@@ -81,7 +88,7 @@ export interface TradeInquiry {
   productCategory: string;
   targetCountry: string;
   notes?: string;
-  createdAt: number;
+  createdAt: Timestamp | null;
 }
 
 export interface KashiApplication {
@@ -93,7 +100,7 @@ export interface KashiApplication {
   idType: "national_id" | "passport";
   idReference: string; // last 4 digits only — see README on KYC data handling
   status: "pending_review";
-  createdAt: number;
+  createdAt: Timestamp | null;
 }
 
 export interface Shop {
@@ -104,5 +111,5 @@ export interface Shop {
   phone: string;
   location: string;
   description: string;
-  createdAt: number;
+  createdAt: Timestamp | null;
 }

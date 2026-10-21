@@ -15,8 +15,8 @@ const config: Config = {
         paper2: "#E2E5DC",
       },
       fontFamily: {
-        display: ["var(--font-fraunces)", "Georgia", "serif"],
-        body: ["var(--font-plex)", "system-ui", "sans-serif"],
+        display: ["Georgia", "serif"],
+        body: ["system-ui", "sans-serif"],
       },
     },
   },

@@ -1,51 +1,45 @@
-
 import Link from "next/link";
-import Card from "@/components/Card";
-
-const MODULES = [
-  { href: "/pickups", title: "Pickup scheduling", desc: "Book a courier pickup instead of visiting a counter." },
-  { href: "/tracking", title: "Shipment tracking", desc: "Look up a parcel's live status by tracking code." },
-  { href: "/calculator", title: "Fee calculator", desc: "Instant pricing by weight, size and destination zone." },
-  { href: "/deliveries", title: "Local deliveries", desc: "Farm-to-supermarket and last-mile requests, live-listed." },
-  { href: "/poboxes", title: "e-P.O. box registration", desc: "Digital boxes for studios, schools, real estate, notaries, banks." },
-  { href: "/submissions", title: "Tenders & submissions", desc: "Job applications, receipts and tenders submitted online." },
-  { href: "/exports", title: "Exports & China shipping", desc: "Outbound shipping for individuals and corporate importers." },
-  { href: "/auctions", title: "Online auctions", desc: "List and browse items, live." },
-  { href: "/trade", title: "AfCFTA trade lane", desc: "Cross-border trade facilitation under the continental free trade area." },
-  { href: "/shops", title: "Local shop directory", desc: "Sector-specific gift shops with no online presence, listed." },
-  { href: "/kashi", title: "Iposita Kashi", desc: "Account applications — KYC intake only, no money movement yet." },
-];
-
+import ServiceHero from "@/components/ServiceHero";
+import ServiceCatalogue from "@/components/ServiceCatalogue";
 export default function Home() {
   return (
     <main>
-      <section className="mx-auto max-w-4xl px-6 pb-12 pt-16">
-        <div className="text-sm font-semibold text-stamp">Digitizing Iposita Rwanda services</div>
-        <h1 className="mt-3 max-w-xl font-display text-4xl font-semibold leading-tight sm:text-5xl">
-          Rwanda&rsquo;s postal network, working at the speed of a phone.
-        </h1>
-        <p className="mt-4 max-w-xl text-inkSoft">
-          Iposita already has what no courier startup can build overnight: a post
-          office in 19 locations. This platform puts that reach online.
-        </p>
-      </section>
-
-      <hr className="route-rule" />
-
-      <section className="mx-auto max-w-4xl px-6 py-12">
-        <h2 className="font-display text-2xl font-semibold">Every function, working</h2>
-        <p className="mt-2 max-w-lg text-inkSoft">
-          Each card below works. Kashi is the
-          one exception on purpose &mdash; it collects applications only, with no
-          money movement until a payment license is in place.
-        </p>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {MODULES.map((m) => (
-            <Link key={m.href} href={m.href}>
-              <Card title={m.title}>{m.desc}</Card>
-            </Link>
-          ))}
+      <div className="mx-auto max-w-6xl px-5 py-8 sm:px-6">
+        <ServiceHero home />
+      </div>
+      <section className="border-y border-ink/10 bg-paper2">
+        <div className="mx-auto max-w-6xl px-6 py-14">
+          <p className="eyebrow">THE DIGITAL SERVICE DESK</p>
+          <h2 className="mb-8 mt-3 font-display text-3xl">
+            A service for every next step.
+          </h2>
+          <ServiceCatalogue />
         </div>
+      </section>
+      <section className="mx-auto grid max-w-6xl gap-7 px-6 py-14 sm:grid-cols-3">
+        {[
+          [
+            "01",
+            "Choose your service",
+            "Find the right form, listing or enquiry.",
+          ],
+          [
+            "02",
+            "Submit securely",
+            "Keep your details and documents in your account.",
+          ],
+          [
+            "03",
+            "Stay in the loop",
+            "Receive staff responses and follow each status change.",
+          ],
+        ].map(([n, title, desc]) => (
+          <div key={n}>
+            <p className="font-mono text-sm text-goldDeep">{n}</p>
+            <h2 className="mt-3 font-display text-xl">{title}</h2>
+            <p className="mt-2 text-sm text-inkSoft">{desc}</p>
+          </div>
+        ))}
       </section>
     </main>
   );

@@ -1,24 +1,25 @@
-// Seeds one sample shipment so /tracking has something real to find.
-// Run with: npm run seed  (requires FIREBASE_SERVICE_ACCOUNT_JSON in .env.local)
-import * as admin from "firebase-admin";
-
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || "{}");
-
-admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-const db = admin.firestore();
-
-async function seed() {
-  await db.collection("shipments").add({
-    trackingCode: "IP-2026-00931",
-    originOffice: "Kigali Central Post Office",
-    destination: "Musanze District Office",
-    status: "in_transit",
-    history: [
-      { status: "accepted", timestamp: Date.now() - 86400000 },
-      { status: "in_transit", timestamp: Date.now() },
-    ],
-  });
-  console.log("Seeded one sample shipment: IP-2026-00931");
+import { initializeApp, applicationDefault } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
+import { randomBytes } from "node:crypto";
+initializeApp({ credential: applicationDefault() });
+async function main() {
+  const code = `DP-P-${randomBytes(10).toString("hex").toUpperCase()}`;
+  await getFirestore()
+    .collection("public_shipments")
+    .doc(code)
+    .set({
+      trackingCode: code,
+      originOffice: "Demo collection network",
+      destination: "Demo destination",
+      status: "in_transit",
+      history: [
+        { status: "accepted", timestamp: Date.now() - 86400000 },
+        { status: "in_transit", timestamp: Date.now() },
+      ],
+    });
+  console.log(`Sample tracking code: ${code}`);
 }
-
-seed().then(() => process.exit(0));
+main().catch((error) => {
+  console.error(error.message);
+  process.exitCode = 1;
+});
