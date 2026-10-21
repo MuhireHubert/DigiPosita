@@ -44,7 +44,7 @@ export default function ServiceHero({ home = false }: { home?: boolean }) {
           fill
           priority
           sizes="(min-width: 1024px) 50vw, 100vw"
-          className="object-cover object-[50%_65%]"
+          className="object-cover object-[50%_45%]"
         />
         <a
           href="https://www.pexels.com/photo/a-deliveryman-on-a-scooter-7363198/"
