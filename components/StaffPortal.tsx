@@ -102,9 +102,9 @@ export default function StaffPortal() {
               </a>
             </section>
           ) : desk === "pickups" ? (
-            <RequestList service="pickups" operations />
+            <RequestList key="pickups" service="pickups" operations />
           ) : desk === "deliveries" ? (
-            <RequestList service="deliveries" operations />
+            <RequestList key="deliveries" service="deliveries" operations />
           ) : desk === "applications" ? (
             <ServiceRequests operations />
           ) : (

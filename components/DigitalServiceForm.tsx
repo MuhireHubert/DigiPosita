@@ -8,7 +8,7 @@ import { db, storage } from "@/lib/firebase";
 import { getService } from "@/lib/services";
 export default function DigitalServiceForm({ kind }: { kind: string }) {
   const service = getService(kind);
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [fields, setFields] = useState<Record<string, string>>({});
   const [contactName, setName] = useState("");
   const [email, setEmail] = useState(user?.email || "");
@@ -79,6 +79,25 @@ export default function DigitalServiceForm({ kind }: { kind: string }) {
       setBusy(false);
     }
   }
+  if (loading) return <p role="status">Loading your account…</p>;
+  if (!user)
+    return (
+      <div className="rounded-xl border border-green/20 bg-green/5 p-6">
+        <h3 className="text-lg font-semibold">
+          Keep your application in your account
+        </h3>
+        <p className="mt-2 text-sm text-inkSoft">
+          Sign in or create an account to submit this request and follow staff
+          responses.
+        </p>
+        <Link
+          className="button mt-4"
+          href={`/login?next=${encodeURIComponent(kind === "shops" ? "/shops/register" : service.path)}`}
+        >
+          Sign in to apply →
+        </Link>
+      </div>
+    );
   if (reference)
     return (
       <div className="rounded-xl border border-green/20 bg-paper2 p-8">
