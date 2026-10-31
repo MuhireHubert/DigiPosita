@@ -257,7 +257,7 @@ function AuctionCard({
           {item.status === "closed" ? "Closed" : expired ? "Ended" : "Open"}
         </span>
       </div>
-      <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-green">
+      <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-brandBlue">
         Seller: IPOSITA Rwanda
       </p>
       <p className="mt-4 whitespace-pre-wrap text-sm text-inkSoft">
@@ -426,5 +426,5 @@ function BidResult({ auctionId, bidId }: { auctionId: string; bidId: string }) {
       ),
     [auctionId, bidId],
   );
-  return <p className="mt-2 text-xs font-semibold text-green">{result}</p>;
+  return <p className="mt-2 text-xs font-semibold text-brandBlue">{result}</p>;
 }

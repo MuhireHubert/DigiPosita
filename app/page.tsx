@@ -1,4 +1,4 @@
-import Link from "next/link";
+import ServiceFinder from "@/components/ServiceFinder";
 import ServiceHero from "@/components/ServiceHero";
 import ServiceCatalogue from "@/components/ServiceCatalogue";
 export default function Home() {
@@ -6,6 +6,9 @@ export default function Home() {
     <main>
       <div className="mx-auto max-w-6xl px-5 py-8 sm:px-6">
         <ServiceHero home />
+        <div id="service-compass">
+          <ServiceFinder />
+        </div>
       </div>
       <section className="border-y border-ink/10 bg-paper2">
         <div className="mx-auto max-w-6xl px-6 py-14">

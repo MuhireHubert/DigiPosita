@@ -3,7 +3,7 @@ import DigitalServiceForm from "@/components/DigitalServiceForm";
 export default function Page() {
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">
-      <Link href="/services" className="text-sm text-green">
+      <Link href="/services" className="text-sm text-brandBlue">
         ← All services
       </Link>
       <p className="eyebrow mt-7">YOUR ADDRESS, CONNECTED</p>
@@ -14,7 +14,7 @@ export default function Page() {
         Choose a digital postal address through ePobox, or request a physical
         post-office box from the IPOSITA service team.
       </p>
-      <section className="my-8 rounded-2xl bg-green p-7 text-white">
+      <section className="my-8 rounded-2xl bg-brandBlue p-7 text-white">
         <h2 className="font-display text-3xl">
           Your digital address with ePobox
         </h2>
@@ -27,7 +27,7 @@ export default function Page() {
           href="https://epobox.app/"
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-5 inline-block rounded-lg bg-white px-5 py-3 text-sm font-semibold text-green"
+          className="mt-5 inline-block rounded-lg bg-white px-5 py-3 text-sm font-semibold text-brandBlue"
         >
           Continue to ePobox ↗
         </a>

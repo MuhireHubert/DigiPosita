@@ -66,7 +66,7 @@ export default function ServiceCatalogue() {
             key={group}
             onClick={() => setCategory(group)}
             aria-pressed={category === group}
-            className={`rounded-full px-4 py-2.5 text-sm transition ${category === group ? "bg-green text-white" : "border border-ink/10 bg-white text-inkSoft hover:border-green"}`}
+            className={`rounded-full px-4 py-2.5 text-sm transition ${category === group ? "bg-brandBlue text-white" : "border border-ink/10 bg-white text-inkSoft hover:border-brandBlue"}`}
           >
             {group}
           </button>
@@ -80,15 +80,15 @@ export default function ServiceCatalogue() {
           <Link
             key={s.key}
             href={s.path}
-            className="group rounded-2xl border border-ink/10 bg-white p-6 transition hover:-translate-y-1 hover:border-green/40 hover:shadow-lg"
+            className="group rounded-2xl border border-ink/10 bg-white p-6 transition hover:-translate-y-1 hover:border-brandBlue/40 hover:shadow-lg"
           >
             <div className="flex items-center justify-between">
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-green/10 text-green">
+              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brandBlue/10 text-brandBlue">
                 <ServiceIcon name={s.key} />
               </span>
               <span
                 aria-hidden="true"
-                className="text-ink/30 transition group-hover:translate-x-1 group-hover:text-green"
+                className="text-ink/30 transition group-hover:translate-x-1 group-hover:text-brandBlue"
               >
                 ↗
               </span>
@@ -97,7 +97,7 @@ export default function ServiceCatalogue() {
             <p className="mt-3 text-sm leading-relaxed text-inkSoft">
               {s.description}
             </p>
-            <p className="mt-6 text-sm font-semibold text-green">
+            <p className="mt-6 text-sm font-semibold text-brandBlue">
               Get started →
             </p>
           </Link>

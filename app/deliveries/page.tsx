@@ -197,7 +197,7 @@ export default function DeliveriesPage() {
         <button
           type="submit"
           disabled={saving}
-          className="rounded bg-ink px-5 py-2.5 text-white hover:bg-green disabled:opacity-60"
+          className="rounded bg-ink px-5 py-2.5 text-white hover:bg-brandBlue disabled:opacity-60"
         >
           {saving ? "Sending…" : "Request delivery"}
         </button>

@@ -203,7 +203,7 @@ function RequestCard({
         <button
           onClick={download}
           disabled={busy}
-          className="mt-4 text-sm font-semibold text-green"
+          className="mt-4 text-sm font-semibold text-brandBlue"
         >
           Download {item.attachment.name}
         </button>
@@ -215,7 +215,7 @@ function RequestCard({
       )}
       {item.result && (
         <div className="mt-4 rounded-lg bg-white p-4">
-          <p className="text-xs font-semibold text-green">
+          <p className="text-xs font-semibold text-brandBlue">
             SERVICE TEAM RESPONSE
           </p>
           <p className="mt-2 whitespace-pre-wrap text-sm">{item.result}</p>

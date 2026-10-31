@@ -4,10 +4,10 @@ import ServiceIcon from "@/components/ServiceIcon";
 export default function Page() {
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">
-      <Link href="/services" className="text-sm text-green">
+      <Link href="/services" className="text-sm text-brandBlue">
         ← All services
       </Link>
-      <div className="mt-7 rounded-3xl bg-green p-7 text-white sm:p-10">
+      <div className="mt-7 rounded-3xl bg-brandBlue p-7 text-white sm:p-10">
         <p className="text-xs font-semibold tracking-widest text-white/70">
           IPOSITA RWANDA · FINANCIAL INCLUSION
         </p>
@@ -47,7 +47,7 @@ export default function Page() {
             key={title}
             className="rounded-2xl border border-ink/10 bg-white p-6"
           >
-            <span className="text-green">
+            <span className="text-brandBlue">
               <ServiceIcon name={icon} />
             </span>
             <h2 className="mt-3 font-semibold">{title}</h2>

@@ -145,3 +145,11 @@ A customer can optionally capture a one-time GPS pin on each pickup, collection 
 Staff access can also be provisioned in `staff_access/{Firebase UID}` with `{role: "admin"}` through the trusted Firebase console/Admin SDK. Clients can read their own access record but cannot create, modify, list or delete role records. No email/password pair grants an automatic role. Existing `staff: true` custom claims remain supported. Sign out and back in after provisioning access.
 
 `/poboxes` links to the separate ePobox platform for digital-address services and offers a distinct physical P.O. box application. No shared login or API synchronization is claimed. `/kashi` explains financial service categories and accepts applications/enquiries only; no funds are moved or loans approved by this portal.
+
+### Service compass and live workspaces
+
+The home and service pages include a guided service compass with preparation checklists and links to the appropriate existing workflow. It makes no automated financial or eligibility decisions. Customer and staff overview cards subscribe to the latest 100 records per booking/application service; counts describe those bounded queues, not lifetime totals. Role-specific attention lists open the relevant desk, and the customer workspace highlights the latest active tracked shipment.
+
+Tracking links open the shipment automatically, subscribe to status changes, and support copying the public tracking link. Public shipment documents continue to exclude customer contact details and location pins. Run `node --import tsx --test tests/product.test.mjs` for activity-summary and tracking-reference checks.
+
+The visual palette is matched to IPOSITA’s published yellow-and-blue identity, using blue `#003DA5` and yellow `#FFB600` with accessible dark text and neutral surfaces. These are implementation tokens, not a claim of an official brand-manual hex specification. The credited real Kigali photograph remains in use.

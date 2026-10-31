@@ -82,7 +82,7 @@ export default function DigitalServiceForm({ kind }: { kind: string }) {
   if (loading) return <p role="status">Loading your account…</p>;
   if (!user)
     return (
-      <div className="rounded-xl border border-green/20 bg-green/5 p-6">
+      <div className="rounded-xl border border-brandBlue/20 bg-brandBlue/5 p-6">
         <h3 className="text-lg font-semibold">
           Keep your application in your account
         </h3>
@@ -100,7 +100,7 @@ export default function DigitalServiceForm({ kind }: { kind: string }) {
     );
   if (reference)
     return (
-      <div className="rounded-xl border border-green/20 bg-paper2 p-8">
+      <div className="rounded-xl border border-brandBlue/20 bg-paper2 p-8">
         <h2 className="font-display text-2xl">Request received</h2>
         <p className="mt-4 break-all font-mono text-sm">
           Reference: {reference}

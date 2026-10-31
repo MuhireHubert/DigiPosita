@@ -5,17 +5,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#14233D",
-        inkSoft: "#3B4A63",
-        gold: "#C89B3C",
-        goldDeep: "#9C7526",
-        green: "#1F5C4A",
+        ink: "#10254B",
+        inkSoft: "#52627A",
+        brandBlue: "#003DA5",
+        brandYellow: "#FFB600",
+        gold: "#FFB600",
+        goldDeep: "#755300",
+        green: "#003DA5",
         stamp: "#A23B2E",
-        paper: "#EDEFE9",
-        paper2: "#E2E5DC",
+        paper: "#F6F8FC",
+        paper2: "#EAF0FA",
       },
       fontFamily: {
-        display: ["Georgia", "serif"],
+        display: ["system-ui", "sans-serif"],
         body: ["system-ui", "sans-serif"],
       },
     },

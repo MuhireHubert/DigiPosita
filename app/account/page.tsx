@@ -1,39 +1,62 @@
+"use client";
+import { useState } from "react";
 import Link from "next/link";
-import ServiceIcon from "@/components/ServiceIcon";
 import ServiceRequests from "@/components/ServiceRequests";
 import { MyBids } from "@/components/Auctions";
 import RequestList from "@/components/RequestList";
+import ActivityOverview from "@/components/ActivityOverview";
+import { useAuth } from "@/components/AuthProvider";
 export default function Account() {
+  const [desk, setDesk] = useState("pickups");
+  const { user } = useAuth();
   return (
-    <main className="mx-auto max-w-4xl px-6 py-14">
-      <p className="eyebrow">YOUR ACCOUNT</p>
-      <h1 className="mt-3 font-display text-4xl">Every request. One place.</h1>
-      <p className="mt-4 text-inkSoft">
-        Follow bookings, service applications, staff responses and auction bids.
-      </p>
-      <div className="my-8 grid gap-3 sm:grid-cols-3">
+    <main className="mx-auto max-w-6xl px-5 py-10 sm:px-6">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="eyebrow">MY DIGIPOSITA</p>
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight">
+            Your everyday, connected.
+          </h1>
+          <p className="mt-3 text-sm text-inkSoft">
+            {user?.displayName ? `Murakaza neza, ${user.displayName}. ` : ""}
+            Your requests, next actions and journeys in one place.
+          </p>
+        </div>
+        <Link href="/services#service-compass" className="button">
+          Start something new ↗
+        </Link>
+      </div>
+      <ActivityOverview onOpen={setDesk} />
+      <div
+        className="mt-10 flex flex-wrap gap-2 border-b border-ink/10 pb-4"
+        role="group"
+        aria-label="Your request categories"
+      >
         {[
-          ["pickups", "Send a parcel", "/pickups"],
-          ["tracking", "Track a shipment", "/tracking"],
-          ["submissions", "Browse services", "/services"],
-        ].map(([icon, title, href]) => (
-          <Link
-            key={href}
-            href={href}
-            className="flex items-center gap-3 rounded-2xl border border-ink/10 bg-white p-5 text-sm font-semibold transition hover:border-green"
+          ["pickups", "Pickups"],
+          ["deliveries", "Deliveries"],
+          ["applications", "Applications"],
+          ["bids", "My auction bids"],
+        ].map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setDesk(key)}
+            aria-pressed={desk === key}
+            className={`rounded-full px-5 py-2.5 text-sm font-medium ${desk === key ? "bg-brandBlue text-white" : "border border-ink/10 bg-white text-inkSoft"}`}
           >
-            <span className="text-green">
-              <ServiceIcon name={icon} />
-            </span>
-            {title}
-            <span className="ml-auto text-green">↗</span>
-          </Link>
+            {label}
+          </button>
         ))}
       </div>
-      <RequestList service="pickups" />
-      <RequestList service="deliveries" />
-      <ServiceRequests />
-      <MyBids />
+      {desk === "pickups" ? (
+        <RequestList key="pickups" service="pickups" />
+      ) : desk === "deliveries" ? (
+        <RequestList key="deliveries" service="deliveries" />
+      ) : desk === "applications" ? (
+        <ServiceRequests />
+      ) : (
+        <MyBids />
+      )}
     </main>
   );
 }

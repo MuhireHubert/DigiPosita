@@ -48,7 +48,7 @@ export default function LocationCapture({
     );
   }
   return (
-    <fieldset className="rounded-xl border border-green/20 bg-green/5 p-4">
+    <fieldset className="rounded-xl border border-brandBlue/20 bg-brandBlue/5 p-4">
       <legend className="px-1 text-sm font-semibold">
         {label} pin (optional)
       </legend>
@@ -116,7 +116,7 @@ export function LocationDetails({
           <strong>{label} pin:</strong> {location.latitude.toFixed(6)},{" "}
           {location.longitude.toFixed(6)} (±{Math.round(location.accuracy)} m){" "}
           <a
-            className="font-semibold text-green underline"
+            className="font-semibold text-brandBlue underline"
             href={`https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}`}
             target="_blank"
             rel="noopener noreferrer"

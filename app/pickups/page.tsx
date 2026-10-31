@@ -148,7 +148,7 @@ export default function PickupsPage() {
         <button
           type="submit"
           disabled={status === "saving"}
-          className="mt-2 rounded bg-ink px-5 py-2.5 text-white hover:bg-green disabled:opacity-60"
+          className="mt-2 rounded bg-ink px-5 py-2.5 text-white hover:bg-brandBlue disabled:opacity-60"
         >
           {status === "saving" ? "Saving…" : "Request pickup"}
         </button>

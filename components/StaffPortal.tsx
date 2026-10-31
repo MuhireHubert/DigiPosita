@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import ActivityOverview from "./ActivityOverview";
 import ServiceRequests from "./ServiceRequests";
 import Auctions from "./Auctions";
 import RequestList from "./RequestList";
@@ -59,7 +60,7 @@ export default function StaffPortal() {
               key={d.key}
               aria-pressed={desk === d.key}
               onClick={() => setDesk(d.key)}
-              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left text-sm ${desk === d.key ? "bg-green text-white" : "text-inkSoft hover:bg-green/5"}`}
+              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left text-sm ${desk === d.key ? "bg-brandBlue text-white" : "text-inkSoft hover:bg-brandBlue/5"}`}
             >
               <ServiceIcon name={d.icon} />
               {d.label}
@@ -69,7 +70,8 @@ export default function StaffPortal() {
         <div className="min-w-0">
           {desk === "overview" ? (
             <section>
-              <h2 className="text-xl font-semibold">
+              <ActivityOverview operations onOpen={setDesk} />
+              <h2 className="mt-10 text-xl font-semibold">
                 Every operation, one workspace.
               </h2>
               <p className="mt-2 text-sm text-inkSoft">
@@ -82,9 +84,9 @@ export default function StaffPortal() {
                   <button
                     key={d.key}
                     onClick={() => setDesk(d.key)}
-                    className="rounded-2xl border border-ink/10 bg-white p-6 text-left transition hover:border-green"
+                    className="rounded-2xl border border-ink/10 bg-white p-6 text-left transition hover:border-brandBlue"
                   >
-                    <span className="text-green">
+                    <span className="text-brandBlue">
                       <ServiceIcon name={d.icon} />
                     </span>
                     <h3 className="mt-4 font-semibold">{d.label} ↗</h3>
@@ -93,7 +95,7 @@ export default function StaffPortal() {
                 ))}
               </div>
               <a
-                className="mt-6 inline-block text-sm font-semibold text-green"
+                className="mt-6 inline-block text-sm font-semibold text-brandBlue"
                 href="https://epobox.app/"
                 target="_blank"
                 rel="noopener noreferrer"

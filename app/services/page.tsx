@@ -1,3 +1,4 @@
+import ServiceFinder from "@/components/ServiceFinder";
 import ServiceCatalogue from "@/components/ServiceCatalogue";
 import ServiceHero from "@/components/ServiceHero";
 import Link from "next/link";
@@ -5,6 +6,9 @@ export default function Services() {
   return (
     <main className="mx-auto max-w-6xl px-5 py-8 sm:px-6">
       <ServiceHero />
+      <div id="service-compass" className="scroll-mt-6">
+        <ServiceFinder />
+      </div>
       <section className="py-12" aria-labelledby="catalogue-heading">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -19,7 +23,10 @@ export default function Services() {
               One account for your requests, documents and next opportunities.
             </p>
           </div>
-          <Link href="/account" className="text-sm font-semibold text-green">
+          <Link
+            href="/account"
+            className="text-sm font-semibold text-brandBlue"
+          >
             View my requests ↗
           </Link>
         </div>

@@ -106,7 +106,10 @@ export default function RequestList({
         <div className="mt-5 rounded-lg border border-ink/10 p-6">
           <p>No {service} yet.</p>
           {!operations && (
-            <Link className="mt-3 inline-block text-green" href={`/${service}`}>
+            <Link
+              className="mt-3 inline-block text-brandBlue"
+              href={`/${service}`}
+            >
               Make your first request →
             </Link>
           )}
@@ -210,7 +213,7 @@ export default function RequestList({
               </p>
               {item.trackingCode && (
                 <Link
-                  className="mt-3 block break-all text-sm font-semibold text-green"
+                  className="mt-3 block break-all text-sm font-semibold text-brandBlue"
                   href={`/tracking?code=${encodeURIComponent(item.trackingCode)}`}
                 >
                   Track {item.trackingCode} →

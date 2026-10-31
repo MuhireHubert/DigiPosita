@@ -14,24 +14,30 @@ export default function Nav() {
     ["/tracking", "Track"],
     ["/auctions", "Auctions"],
     ["/shops", "Shops"],
-    ["/account", "My requests"],
+    ["/account", "My workspace"],
     ...(staff ? [["/staff", "Operations"]] : []),
   ];
   return (
     <header className="border-b border-ink/10 bg-white">
+      <div className="border-b-4 border-brandYellow bg-brandBlue">
+        <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-2 px-6 py-2 text-[11px] font-medium tracking-wide text-white/85">
+          <span>IPOSITA RWANDA · DIGITAL POSTAL SERVICES</span>
+          <span>Local roots. New possibilities.</span>
+        </div>
+      </div>
       <div className="mx-auto max-w-6xl px-6 py-5">
         <div className="flex items-center justify-between gap-4">
           <Link
             href="/"
-            className="flex items-center font-display text-2xl font-bold"
+            className="flex items-center font-display text-2xl font-bold tracking-tight"
           >
             <span
-              className="mr-2 flex h-9 w-9 items-center justify-center rounded-xl bg-green font-sans text-lg text-white"
+              className="mr-2 flex h-9 w-9 items-center justify-center rounded-xl bg-brandYellow font-sans text-lg text-brandBlue"
               aria-hidden="true"
             >
               ↗
             </span>
-            Digi<span className="text-goldDeep">Posita</span>
+            Digi<span className="text-brandBlue">Posita</span>
             <span className="ml-2 text-xs font-normal text-inkSoft">
               {process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true"
                 ? "LOCAL DEMO"
@@ -65,7 +71,7 @@ export default function Nav() {
               href={href}
               aria-current={path === href ? "page" : undefined}
               className={
-                path === href ? "font-semibold text-green" : "text-inkSoft"
+                path === href ? "font-semibold text-brandBlue" : "text-inkSoft"
               }
             >
               {label}

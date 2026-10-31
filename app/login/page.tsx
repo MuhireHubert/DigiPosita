@@ -100,7 +100,7 @@ export default function Login() {
         Submit requests. Follow every response. All in one place.
       </p>
       {process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true" && (
-        <div className="my-6 rounded-xl border border-green/20 bg-paper2 p-5">
+        <div className="my-6 rounded-xl border border-brandBlue/20 bg-paper2 p-5">
           <p className="text-sm font-semibold">Explore the local demo</p>
           <p className="mt-2 text-xs text-inkSoft">
             Sample accounts use local emulators. These are not live services.
