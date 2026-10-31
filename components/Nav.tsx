@@ -1,38 +1,84 @@
 "use client";
-
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const LINKS = [
-  { href: "/pickups", label: "Pickups" },
-  { href: "/tracking", label: "Tracking" },
-  { href: "/calculator", label: "Fees" },
-  { href: "/deliveries", label: "Deliveries" },
-  { href: "/poboxes", label: "e-P.O. Box" },
-  { href: "/submissions", label: "Submissions" },
-  { href: "/exports", label: "Exports" },
-  { href: "/auctions", label: "Auctions" },
-  { href: "/trade", label: "AfCFTA" },
-  { href: "/shops", label: "Shops" },
-  { href: "/kashi", label: "Kashi" },
-];
-
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { useAuth } from "./AuthProvider";
 export default function Nav() {
-  const pathname = usePathname();
+  const path = usePathname();
+  const { user, staff } = useAuth();
+  const [error, setError] = useState("");
+  const links = [
+    ["/services", "All services"],
+    ["/tracking", "Track"],
+    ["/auctions", "Auctions"],
+    ["/shops", "Shops"],
+    ["/account", "My workspace"],
+    ...(staff ? [["/staff", "Operations"]] : []),
+  ];
   return (
-    <header className="sticky top-0 z-10 border-b border-ink/10 bg-paper/95 backdrop-blur">
-      <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-6 py-4">
-        <Link href="/" className="shrink-0 font-display text-lg font-bold">
-          Iposita <span className="text-goldDeep">Digital</span>
-        </Link>
-        <nav className="flex gap-4 overflow-x-auto text-sm text-inkSoft [scrollbar-width:none]">
-          {LINKS.map((l) => (
-            <Link key={l.href} href={l.href}
-              className={`shrink-0 hover:text-ink ${pathname === l.href ? "font-medium text-ink" : ""}`}>
-              {l.label}
+    <header className="border-b border-ink/10 bg-white">
+      <div className="border-b-4 border-brandYellow bg-brandBlue">
+        <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-2 px-6 py-2 text-[11px] font-medium tracking-wide text-white/85">
+          <span>IPOSITA RWANDA · DIGITAL POSTAL SERVICES</span>
+          <span>Local roots. New possibilities.</span>
+        </div>
+      </div>
+      <div className="mx-auto max-w-6xl px-6 py-5">
+        <div className="flex items-center justify-between gap-4">
+          <Link
+            href="/"
+            className="flex items-center font-display text-2xl font-bold tracking-tight"
+          >
+            <span
+              className="mr-2 flex h-9 w-9 items-center justify-center rounded-xl bg-brandYellow font-sans text-lg text-brandBlue"
+              aria-hidden="true"
+            >
+              ↗
+            </span>
+            Digi<span className="text-brandBlue">Posita</span>
+            <span className="ml-2 text-xs font-normal text-inkSoft">
+              {process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true"
+                ? "LOCAL DEMO"
+                : "PILOT"}
+            </span>
+          </Link>
+          {user ? (
+            <button
+              className="text-sm"
+              onClick={() =>
+                signOut(auth).catch(() =>
+                  setError("Could not sign out. Please try again."),
+                )
+              }
+            >
+              Sign out
+            </button>
+          ) : (
+            <Link href="/login" className="text-sm font-semibold">
+              Sign in ↗
+            </Link>
+          )}
+        </div>
+        <nav
+          aria-label="Main navigation"
+          className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm"
+        >
+          {links.map(([href, label]) => (
+            <Link
+              key={href}
+              href={href}
+              aria-current={path === href ? "page" : undefined}
+              className={
+                path === href ? "font-semibold text-brandBlue" : "text-inkSoft"
+              }
+            >
+              {label}
             </Link>
           ))}
         </nav>
+        {error && <p role="alert">{error}</p>}
       </div>
     </header>
   );

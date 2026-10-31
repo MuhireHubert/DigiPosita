@@ -1,82 +1,214 @@
 rules_version = '2';
 service cloud.firestore {
-  match /databases/{database}/documents {
-
-    // --- Public-facing intake forms: anyone can create, nobody can edit/delete client-side.
-    // Staff updates (status changes, assigning box numbers, etc.) go through the
-    // Admin SDK or Firebase Console until an authenticated staff role exists.
-
-    match /pickups/{id} {
-      allow create: if request.resource.data.contactName is string
-                    && request.resource.data.phone is string
-                    && request.resource.data.weightKg is number;
-      allow read: if true;
-      allow update, delete: if false;
-    }
-
-    match /deliveries/{id} {
-      allow create: if request.resource.data.requesterName is string
-                    && request.resource.data.fromLocation is string
-                    && request.resource.data.toLocation is string;
-      allow read: if true;
-      allow update, delete: if false;
-    }
-
-    match /poboxes/{id} {
-      allow create: if request.resource.data.orgName is string
-                    && request.resource.data.contactEmail is string;
-      allow read: if true;
-      allow update, delete: if false;
-    }
-
-    match /submissions/{id} {
-      allow create: if request.resource.data.submitterName is string
-                    && request.resource.data.type in ["tender", "job_application", "receipt"];
-      allow read: if true;
-      allow update, delete: if false;
-    }
-
-    match /exports/{id} {
-      allow create: if request.resource.data.requesterName is string
-                    && request.resource.data.goodsDescription is string;
-      allow read: if true;
-      allow update, delete: if false;
-    }
-
-    match /auctions/{id} {
-      allow create: if request.resource.data.title is string
-                    && request.resource.data.startingPriceRwf is number;
-      allow read: if true;
-      allow update, delete: if false;
-    }
-
-    match /trade_inquiries/{id} {
-      allow create: if request.resource.data.companyName is string
-                    && request.resource.data.contactEmail is string;
-      allow read: if true;
-      allow update, delete: if false;
-    }
-
-    match /shops/{id} {
-      allow create: if request.resource.data.shopName is string
-                    && request.resource.data.phone is string;
-      allow read: if true;
-      allow update, delete: if false;
-    }
-
-    // Kashi applications contain partial ID data — readable only via the
-    // Admin SDK (staff review), never directly by clients.
-    match /kashi_applications/{id} {
-      allow create: if request.resource.data.fullName is string
-                    && request.resource.data.idReference is string
-                    && request.resource.data.idReference.size() <= 4;
-      allow read, update, delete: if false;
-    }
-
-    // Shipments: read-only to the public (tracking lookups); staff/integration writes only.
-    match /shipments/{id} {
-      allow read: if true;
-      allow write: if false;
-    }
+ match /databases/{database}/documents {
+  function signedIn() { return request.auth != null; }
+  function staff() { return signedIn() && (request.auth.token.get('staff', false) == true || (exists(/databases/$(database)/documents/staff_access/$(request.auth.uid)) && get(/databases/$(database)/documents/staff_access/$(request.auth.uid)).data.role == 'admin')); }
+  function owner() { return signedIn() && resource.data.ownerId == request.auth.uid; }
+  function text(value, maximum) { return value is string && value.size() > 0 && value.size() <= maximum; }
+  function validLocation(v) {
+   return v is map && v.keys().hasAll(['latitude','longitude','accuracy','capturedAt']) && v.keys().hasOnly(['latitude','longitude','accuracy','capturedAt'])
+    && v.latitude is number && v.latitude >= -90 && v.latitude <= 90
+    && v.longitude is number && v.longitude >= -180 && v.longitude <= 180
+    && v.accuracy is number && v.accuracy >= 0 && v.accuracy <= 100000
+    && v.capturedAt is number && v.capturedAt > 0 && v.capturedAt <= request.time.toMillis();
   }
+  function optionalLocation(key) { return !(key in request.resource.data) || validLocation(request.resource.data[key]); }
+  function optionalDirections(key) { return !(key in request.resource.data) || (request.resource.data[key] is string && request.resource.data[key].size() <= 2000); }
+  function newBooking() {
+   return signedIn() && request.resource.data.ownerId == request.auth.uid
+    && request.resource.data.status == 'requested'
+    && request.resource.data.createdAt == request.time
+    && request.resource.data.weightKg is number
+    && request.resource.data.weightKg > 0 && request.resource.data.weightKg <= 1000;
+  }
+  function cancel() {
+   return owner() && resource.data.status == 'requested'
+    && request.resource.data.status == 'cancelled'
+    && request.resource.data.updatedAt == request.time
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt']);
+  }
+  function staffUpdate(kind) {
+   let before = resource.data.status;
+   let after = request.resource.data.status;
+   return staff()
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt','trackingCode'])
+    && request.resource.data.updatedAt == request.time
+    && text(request.resource.data.trackingCode, 25)
+    && ((kind == 'pickups' && ((before == 'requested' && after == 'scheduled') || (before == 'scheduled' && after == 'collected') || (before == 'collected' && after == 'delivered')))
+     || (kind == 'deliveries' && ((before == 'requested' && after == 'en_route') || (before == 'en_route' && after == 'delivered'))));
+  }
+  match /pickups/{id} {
+   allow create: if newBooking()
+    && request.resource.data.keys().hasAll(['ownerId','contactName','phone','address','weightKg','size','notes','status','createdAt'])
+    && request.resource.data.keys().hasOnly(['ownerId','contactName','phone','address','weightKg','size','notes','status','createdAt','location','directions'])
+    && optionalLocation('location') && optionalDirections('directions')
+    && text(request.resource.data.contactName,120) && text(request.resource.data.phone,30)
+    && text(request.resource.data.address,500) && request.resource.data.size in ['small','medium','large']
+    && request.resource.data.notes is string && request.resource.data.notes.size() <= 2000;
+   allow read: if owner() || staff();
+   allow update: if cancel() || staffUpdate('pickups');
+  }
+  match /deliveries/{id} {
+   allow create: if newBooking()
+    && request.resource.data.keys().hasAll(['ownerId','requesterName','phone','fromLocation','toLocation','goodsType','weightKg','status','createdAt'])
+    && request.resource.data.keys().hasOnly(['ownerId','requesterName','phone','fromLocation','toLocation','goodsType','weightKg','status','createdAt','fromCoordinates','toCoordinates','fromDirections','toDirections'])
+    && optionalLocation('fromCoordinates') && optionalLocation('toCoordinates') && optionalDirections('fromDirections') && optionalDirections('toDirections')
+    && text(request.resource.data.phone,30) && text(request.resource.data.requesterName,120) && text(request.resource.data.fromLocation,500)
+    && text(request.resource.data.toLocation,500) && text(request.resource.data.goodsType,200);
+   allow read: if owner() || staff();
+   allow update: if cancel() || staffUpdate('deliveries');
+  }
+  match /public_shipments/{code} {
+   // Tracking codes are unguessable references. Public enumeration is forbidden.
+   allow get: if true;
+   allow list: if staff();
+   allow create, update: if staff()
+    && request.resource.data.keys().hasOnly(['trackingCode','status','originOffice','destination','history'])
+    && request.resource.data.trackingCode == code
+    && request.resource.data.status in ['accepted','in_transit','out_for_delivery','delivered']
+    && request.resource.data.originOffice is string && request.resource.data.destination is string
+    && request.resource.data.history is list && request.resource.data.history.size() <= 10;
+  }
+  function newServiceRequest() {
+   return signedIn() && request.resource.data.ownerId == request.auth.uid
+    && request.resource.data.keys().hasAll(['ownerId','kind','contactName','email','phone','fields','status','result','customerReply','createdAt'])
+    && request.resource.data.keys().hasOnly(['ownerId','kind','contactName','email','phone','fields','status','result','customerReply','createdAt','attachment','publishConsent'])
+    && request.resource.data.createdAt == request.time && request.resource.data.status == 'submitted'
+    && request.resource.data.result == '' && request.resource.data.customerReply == ''
+    && text(request.resource.data.contactName,120) && text(request.resource.data.email,200)
+    && text(request.resource.data.phone,30) && request.resource.data.fields is map;
+  }
+  function validServiceFields(kind, f) {
+   return (kind == 'submissions' && f.keys().hasAll(['category','reference','description']) && f.keys().hasOnly(['category','reference','description'])
+    && f.category in ['Tender','Job application','Receipt','Other'] && text(f.reference,500) && text(f.description,2000))
+    || (kind == 'poboxes' && f.keys().hasAll(['organization','office','plan']) && f.keys().hasOnly(['organization','office','plan'])
+    && text(f.organization,500) && text(f.office,500) && f.plan in ['Personal','Business','Institution'])
+    || (kind == 'exports' && f.keys().hasAll(['channel','destination','goods','weight']) && f.keys().hasOnly(['channel','destination','goods','weight'])
+    && f.channel in ['Export from Rwanda','China shipping','Other international shipping'] && text(f.destination,500) && text(f.goods,2000)
+    && f.weight is string && f.weight.matches('^([0-9]{1,3}(\\.[0-9])?|1000(\\.0)?)$') && !(f.weight in ['0','0.0','00','000','00.0','000.0']))
+    || (kind == 'trade' && f.keys().hasAll(['company','direction','country','product']) && f.keys().hasOnly(['company','direction','country','product'])
+    && text(f.company,500) && f.direction in ['Export','Import'] && text(f.country,500) && text(f.product,2000))
+    || (kind == 'shops' && f.keys().hasAll(['shopName','category','location','description']) && f.keys().hasOnly(['shopName','category','location','description'])
+    && text(f.shopName,500) && text(f.category,500) && text(f.location,500) && text(f.description,2000))
+    || (kind == 'kashi' && f.keys().hasAll(['accountType','office','purpose']) && f.keys().hasOnly(['accountType','office','purpose'])
+    && f.accountType in ['Personal','Business'] && text(f.office,500) && text(f.purpose,2000))
+    || (kind == 'other' && f.keys().hasAll(['category','subject','description']) && f.keys().hasOnly(['category','subject','description'])
+    && f.category in ['General enquiry','Postal service','Delivery issue','Feedback'] && text(f.subject,500) && text(f.description,2000));
+  }
+  function validAttachment(id) {
+   let a=request.resource.data.attachment;
+   return a is map && a.keys().hasAll(['path','name','size','type']) && a.keys().hasOnly(['path','name','size','type'])
+    && a.path == 'serviceDocuments/' + request.auth.uid + '/' + id + '/document'
+    && text(a.name,200) && a.size is int && a.size > 0 && a.size <= 10485760
+    && a.type in ['application/pdf','image/jpeg','image/png'];
+  }
+  function serviceTransition() {
+   let before=resource.data.status;
+   let after=request.resource.data.status;
+   return (before == 'submitted' && after in ['reviewing','rejected'])
+    || (before == 'reviewing' && after in ['action_required','approved','rejected'])
+    || (before == 'action_required' && after in ['reviewing','rejected'])
+    || (before == 'approved' && after == 'completed');
+  }
+  match /service_requests/{id} {
+   allow create: if newServiceRequest() && validServiceFields(request.resource.data.kind,request.resource.data.fields)
+    && (request.resource.data.kind == 'submissions' ? validAttachment(id) : !('attachment' in request.resource.data))
+    && (request.resource.data.kind == 'shops' ? request.resource.data.publishConsent == true : !('publishConsent' in request.resource.data));
+   allow read: if owner() || staff();
+   allow update: if request.resource.data.updatedAt == request.time && (
+    (staff() && serviceTransition() && text(request.resource.data.result,2000)
+     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','result','updatedAt','boxNumber'])
+     && (resource.data.kind != 'poboxes' || request.resource.data.status != 'approved' || text(request.resource.data.boxNumber,40))
+     && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['boxNumber']) || (resource.data.kind == 'poboxes' && request.resource.data.status == 'approved')))
+    || (owner() && resource.data.status == 'submitted' && request.resource.data.status == 'cancelled'
+     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt']))
+    || (owner() && resource.data.status == 'action_required' && request.resource.data.status == 'reviewing'
+     && text(request.resource.data.customerReply,2000)
+     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','customerReply','updatedAt'])));
+  }
+  match /pobox_assignments/{id} {
+   allow read: if owner() || staff();
+   allow create: if staff() && request.resource.data.keys().hasAll(['ownerId','requestId','office','boxNumber','createdAt'])
+    && request.resource.data.keys().hasOnly(['ownerId','requestId','office','boxNumber','createdAt'])
+    && request.resource.data.createdAt == request.time && text(request.resource.data.boxNumber,40)
+    && getAfter(/databases/$(database)/documents/service_requests/$(request.resource.data.requestId)).data.kind == 'poboxes'
+    && getAfter(/databases/$(database)/documents/service_requests/$(request.resource.data.requestId)).data.status == 'approved'
+    && request.resource.data.ownerId == getAfter(/databases/$(database)/documents/service_requests/$(request.resource.data.requestId)).data.ownerId
+    && request.resource.data.office == getAfter(/databases/$(database)/documents/service_requests/$(request.resource.data.requestId)).data.fields.office
+    && request.resource.data.boxNumber == getAfter(/databases/$(database)/documents/service_requests/$(request.resource.data.requestId)).data.boxNumber;
+  }
+  match /public_shops/{id} {
+   allow read: if true;
+   allow create, update: if staff()
+    && request.resource.data.keys().hasAll(['shopName','category','location','description','phone','updatedAt'])
+    && request.resource.data.keys().hasOnly(['shopName','category','location','description','phone','updatedAt'])
+    && getAfter(/databases/$(database)/documents/service_requests/$(id)).data.kind == 'shops'
+    && getAfter(/databases/$(database)/documents/service_requests/$(id)).data.status == 'approved'
+    && getAfter(/databases/$(database)/documents/service_requests/$(id)).data.publishConsent == true
+    && request.resource.data.shopName == getAfter(/databases/$(database)/documents/service_requests/$(id)).data.fields.shopName
+    && request.resource.data.category == getAfter(/databases/$(database)/documents/service_requests/$(id)).data.fields.category
+    && request.resource.data.location == getAfter(/databases/$(database)/documents/service_requests/$(id)).data.fields.location
+    && request.resource.data.description == getAfter(/databases/$(database)/documents/service_requests/$(id)).data.fields.description
+    && request.resource.data.phone == getAfter(/databases/$(database)/documents/service_requests/$(id)).data.phone
+    && request.resource.data.updatedAt == request.time;
+   allow delete: if staff();
+  }
+  function validBid(auctionId,bidId) {
+   let before=get(/databases/$(database)/documents/auction_listings/$(auctionId)).data;
+   let after=getAfter(/databases/$(database)/documents/auction_listings/$(auctionId)).data;
+   let b=request.resource.data;
+   return signedIn() && b.keys().hasAll(['ownerId','contactEmail','amount','createdAt']) && b.keys().hasOnly(['ownerId','contactEmail','amount','createdAt'])
+    && b.contactEmail == request.auth.token.email && b.ownerId == request.auth.uid && b.createdAt == request.time && b.amount is int && b.amount <= 1000000000000
+    && before.status == 'open' && request.time < before.closesAt
+    && b.amount >= before.startingPrice && b.amount > before.highestBid
+    && after.highestBid == b.amount && after.lastBidId == bidId && after.bidCount == before.bidCount + 1
+    && getAfter(/databases/$(database)/documents/customer_bids/$(request.auth.uid)/entries/$(bidId)).data.amount == b.amount
+    && getAfter(/databases/$(database)/documents/customer_bids/$(request.auth.uid)/entries/$(bidId)).data.auctionId == auctionId;
+  }
+  match /auction_listings/{auctionId} {
+   allow read: if true;
+   allow create: if staff()
+    && request.resource.data.keys().hasAll(['title','description','startingPrice','highestBid','bidCount','lastBidId','status','closesAt','createdAt'])
+    && request.resource.data.keys().hasOnly(['title','description','startingPrice','highestBid','bidCount','lastBidId','status','closesAt','createdAt'])
+    && text(request.resource.data.title,200) && text(request.resource.data.description,2000)
+    && request.resource.data.startingPrice is int && request.resource.data.startingPrice >= 1 && request.resource.data.startingPrice <= 1000000000000
+    && request.resource.data.highestBid == 0 && request.resource.data.bidCount == 0 && request.resource.data.lastBidId == ''
+    && request.resource.data.status == 'open' && request.resource.data.closesAt is timestamp && request.resource.data.closesAt > request.time
+    && request.resource.data.createdAt == request.time;
+   allow update: if (
+    staff() && resource.data.status == 'open' && request.time >= resource.data.closesAt
+    && request.resource.data.status == 'closed' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+   ) || (
+    signedIn() && resource.data.status == 'open' && request.time < resource.data.closesAt
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['highestBid','bidCount','lastBidId'])
+    && request.resource.data.highestBid is int && request.resource.data.highestBid > resource.data.highestBid
+    && request.resource.data.highestBid >= resource.data.startingPrice && request.resource.data.highestBid <= 1000000000000
+    && request.resource.data.bidCount == resource.data.bidCount + 1
+    && getAfter(/databases/$(database)/documents/auction_listings/$(auctionId)/bids/$(request.resource.data.lastBidId)).data.ownerId == request.auth.uid
+    && getAfter(/databases/$(database)/documents/auction_listings/$(auctionId)/bids/$(request.resource.data.lastBidId)).data.amount == request.resource.data.highestBid
+    && getAfter(/databases/$(database)/documents/auction_listings/$(auctionId)/bids/$(request.resource.data.lastBidId)).data.createdAt == request.time
+   );
+   match /bids/{bidId} {
+    allow read: if owner() || staff();
+    allow create: if validBid(auctionId,bidId);
+   }
+  }
+  match /customer_bids/{uid}/entries/{bidId} {
+   allow read: if signedIn() && (request.auth.uid == uid || staff());
+   allow create: if signedIn() && uid == request.auth.uid
+    && request.resource.data.keys().hasAll(['auctionId','auctionTitle','amount','createdAt'])
+    && request.resource.data.keys().hasOnly(['auctionId','auctionTitle','amount','createdAt'])
+    && request.resource.data.createdAt == request.time
+    && request.resource.data.auctionTitle == get(/databases/$(database)/documents/auction_listings/$(request.resource.data.auctionId)).data.title
+    && getAfter(/databases/$(database)/documents/auction_listings/$(request.resource.data.auctionId)/bids/$(bidId)).data.ownerId == uid
+    && getAfter(/databases/$(database)/documents/auction_listings/$(request.resource.data.auctionId)/bids/$(bidId)).data.createdAt == request.time
+    && request.resource.data.amount == getAfter(/databases/$(database)/documents/auction_listings/$(request.resource.data.auctionId)/bids/$(bidId)).data.amount;
+  }
+
+  // Access records are provisioned only through a trusted administrator, never by clients.
+  match /staff_access/{uid} { allow get: if signedIn() && request.auth.uid == uid; }
+
+  // Legacy collections remain closed.
+  match /{document=**} { allow read, write: if false; }
+ }
 }
