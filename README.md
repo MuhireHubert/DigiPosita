@@ -153,3 +153,13 @@ The home and service pages include a guided service compass with preparation che
 Tracking links open the shipment automatically, subscribe to status changes, and support copying the public tracking link. Public shipment documents continue to exclude customer contact details and location pins. Run `node --import tsx --test tests/product.test.mjs` for activity-summary and tracking-reference checks.
 
 The visual palette is matched to IPOSITA’s published yellow-and-blue identity, using blue `#003DA5` and yellow `#FFB600` with accessible dark text and neutral surfaces. These are implementation tokens, not a claim of an official brand-manual hex specification. The credited real Kigali photograph remains in use.
+
+### Linked account identifiers and service desks
+
+Email/password remains the account credential. Optional phone or username aliases resolve to an existing account only after Firebase verifies the supplied password. Configure `LOGIN_ALIASES_JSON` as a private server environment variable containing an alias-to-email JSON object; never use a `NEXT_PUBLIC_` prefix for this mapping. National Rwandan phone numbers and their `+250` equivalents normalize to the same alias. This is password sign-in, not SMS verification. Password reset requires the account email. Alias resolution returns no tokens, uses non-cacheable responses and rejects cross-origin requests.
+
+Set the public Firebase variables for every deployed environment that needs accounts, including Preview, and rebuild after changing build-time variables. Deploy the `service_requests` composite index on `kind` ascending and `createdAt` descending before enabling the dedicated service queues.
+
+The staff workspace has individual desks for documents, physical P.O. boxes, exports, trade, shops, Kashi, other enquiries, pickups, deliveries, auctions and tracking. Application desks support reference/contact search and status filtering, with URLs such as `/staff?desk=kashi`. These use the same protected staff role and existing workflow permissions. ePobox remains an external platform; financial applications remain review-only.
+
+Run `node --import tsx --test tests/product.test.mjs tests/login-identifiers.test.mjs` for the activity, tracking, identifier normalization, provider verification and request-origin checks.

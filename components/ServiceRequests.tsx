@@ -18,12 +18,16 @@ import { services, getService, stages, label } from "@/lib/services";
 import { reviewRequest, type DigitalRequest } from "@/lib/service-requests";
 export default function ServiceRequests({
   operations = false,
+  serviceKind,
 }: {
   operations?: boolean;
+  serviceKind?: string;
 }) {
   const { user, staff } = useAuth();
   const [items, setItems] = useState<DigitalRequest[]>([]);
-  const [kind, setKind] = useState("all");
+  const [kind, setKind] = useState(serviceKind || "all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -33,6 +37,7 @@ export default function ServiceRequests({
     const q = operations
       ? query(
           collection(db, "service_requests"),
+          ...(serviceKind ? [where("kind", "==", serviceKind)] : []),
           orderBy("createdAt", "desc"),
           limit(100),
         )
@@ -55,7 +60,16 @@ export default function ServiceRequests({
         setError("Could not load service requests. Please try again.");
       },
     );
-  }, [user, staff, operations]);
+  }, [user, staff, operations, serviceKind]);
+  const visible = items.filter(
+    (i) =>
+      (kind === "all" || i.kind === kind) &&
+      (statusFilter === "all" || i.status === statusFilter) &&
+      [i.id, i.contactName, i.email, i.phone, ...Object.values(i.fields || {})]
+        .join(" ")
+        .toLowerCase()
+        .includes(search.toLowerCase()),
+  );
   return (
     <section className="mt-12">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -64,20 +78,61 @@ export default function ServiceRequests({
             {operations ? "Service desk" : "My service requests"}
           </h2>
           <p className="mt-2 text-sm text-inkSoft">
-            Latest 100 requests across all services.
+            Latest 100 requests{" "}
+            {serviceKind
+              ? `for ${getService(serviceKind)?.title}`
+              : "across all services"}
+            .
           </p>
         </div>
+        {!serviceKind && (
+          <label className="text-sm">
+            Filter service
+            <select
+              className="input mt-1"
+              value={kind}
+              onChange={(e) => setKind(e.target.value)}
+            >
+              <option value="all">All services</option>
+              {services.map((s) => (
+                <option key={s.key} value={s.key}>
+                  {s.title}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </div>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <label className="text-sm">
-          Filter service
+          Search requests
+          <input
+            className="input mt-1"
+            maxLength={100}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Reference, contact or service details"
+          />
+        </label>
+        <label className="text-sm">
+          Request status
           <select
             className="input mt-1"
-            value={kind}
-            onChange={(e) => setKind(e.target.value)}
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="all">All services</option>
-            {services.map((s) => (
-              <option key={s.key} value={s.key}>
-                {s.title}
+            {[
+              "all",
+              "submitted",
+              "reviewing",
+              "action_required",
+              "approved",
+              "completed",
+              "rejected",
+              "cancelled",
+            ].map((value) => (
+              <option key={value} value={value}>
+                {label(value)}
               </option>
             ))}
           </select>
@@ -94,18 +149,16 @@ export default function ServiceRequests({
         </p>
       )}
       <div className="mt-6 space-y-5">
-        {items
-          .filter((i) => kind === "all" || i.kind === kind)
-          .map((item) => (
-            <RequestCard key={item.id} item={item} operations={operations} />
-          ))}
-        {!loading &&
-          !error &&
-          !items.some((i) => kind === "all" || i.kind === kind) && (
-            <p className="rounded-lg border border-ink/10 p-6 text-sm text-inkSoft">
-              No service requests here yet.
-            </p>
-          )}
+        {visible.map((item) => (
+          <RequestCard key={item.id} item={item} operations={operations} />
+        ))}
+        {!loading && !error && visible.length === 0 && (
+          <p className="rounded-lg border border-ink/10 p-6 text-sm text-inkSoft">
+            {items.length
+              ? "No requests match these filters."
+              : "No service requests here yet."}
+          </p>
+        )}
       </div>
     </section>
   );

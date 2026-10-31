@@ -20,9 +20,27 @@ export default function Login() {
     setBusy(true);
     setMessage("");
     try {
+      let accountEmail = email.trim();
+      if (!register && !accountEmail.includes("@")) {
+        const response = await fetch("/api/auth/resolve-identifier", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identifier: accountEmail, password }),
+        });
+        const result = await response.json();
+        if (!response.ok || typeof result.email !== "string") {
+          setMessage(
+            typeof result.error === "string"
+              ? result.error
+              : "Unable to sign in. Check your details.",
+          );
+          return;
+        }
+        accountEmail = result.email;
+      }
       const credential = await (
         register ? createUserWithEmailAndPassword : signInWithEmailAndPassword
-      )(auth, email.trim(), password);
+      )(auth, accountEmail, password);
       const access = await getDoc(
         doc(db, "staff_access", credential.user.uid),
       ).catch(() => null);
@@ -78,6 +96,10 @@ export default function Login() {
     }
   }
   async function reset() {
+    if (!email.includes("@")) {
+      setMessage("Enter your account email to request password reset.");
+      return;
+    }
     setBusy(true);
     try {
       await sendPasswordResetEmail(auth, email.trim());
@@ -97,7 +119,9 @@ export default function Login() {
         {register ? "Create your account" : "Welcome back"}
       </h1>
       <p className="mt-3 text-inkSoft">
-        Submit requests. Follow every response. All in one place.
+        {register
+          ? "Create a customer account using your email address."
+          : "Use your email, or a username or phone linked by the service team."}
       </p>
       {process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true" && (
         <div className="my-6 rounded-xl border border-brandBlue/20 bg-paper2 p-5">
@@ -131,11 +155,11 @@ export default function Login() {
         <>
           <form onSubmit={submit} className="mt-8 space-y-5">
             <label className="block">
-              Email
+              {register ? "Email" : "Email, linked username or phone"}
               <input
                 className="input mt-2"
-                type="email"
-                autoComplete="email"
+                type={register ? "email" : "text"}
+                autoComplete={register ? "email" : "username"}
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
